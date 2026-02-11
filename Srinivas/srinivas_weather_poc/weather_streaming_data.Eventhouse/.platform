@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Eventhouse",
+    "displayName": "weather_streaming_data"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "d60cc22c-a07f-b795-4475-e9496c9ed008"
+  }
+}
