@@ -1,0 +1,374 @@
+{
+  "sources": [
+    {
+      "id": "81c44ed6-c626-4252-9865-c8c58e0c6bb4",
+      "name": "azure-event-hub",
+      "type": "AzureEventHub",
+      "properties": {
+        "dataConnectionId": "7b35cc30-8ad4-4d6f-8a46-65813523bdd1",
+        "consumerGroupName": "$Default",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "id": "068d1077-33e5-4873-a92f-00bb5d819cb1",
+      "name": "Eventhouse",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "b743e2f8-a365-804e-4e15-ab6812df0d84",
+        "databaseName": "weather_streaming_data",
+        "tableName": "weather_live",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "ManageFields"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "ManageFields",
+          "schema": {
+            "columns": [
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "country",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lat",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lon",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "localtime",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "temp_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "humidity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "wind_kph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "uv",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "condition_text",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ingestion_time_utc",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "id": "53ec01f7-6d69-4f29-b827-6190388b47f0",
+      "name": "weather-realtime-stream-stream",
+      "type": "DefaultStream",
+      "properties": {},
+      "inputNodes": [
+        {
+          "name": "azure-event-hub"
+        }
+      ]
+    }
+  ],
+  "operators": [
+    {
+      "name": "ManageFields",
+      "type": "ManageFields",
+      "inputNodes": [
+        {
+          "name": "weather-realtime-stream-stream"
+        }
+      ],
+      "properties": {
+        "columns": [
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "city",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "city"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "country",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "country"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "lat",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "lat"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "lon",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "lon"
+          },
+          {
+            "type": "Cast",
+            "properties": {
+              "targetDataType": "DateTime",
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "localtime",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "localtime"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "temp_c",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "temp_c"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "humidity",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "humidity"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "wind_kph",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "wind_kph"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "uv",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "uv"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "condition_text",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "condition_text"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "ingestion_time_utc",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "ingestion_time_utc"
+          }
+        ]
+      },
+      "inputSchemas": [
+        {
+          "name": "weather-realtime-stream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "country",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lat",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lon",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "localtime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "temp_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "humidity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "wind_kph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "uv",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "condition_text",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ingestion_time_utc",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "EventProcessedUtcTime",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "PartitionId",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "EventEnqueuedUtcTime",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "compatibilityLevel": "1.1"
+}
