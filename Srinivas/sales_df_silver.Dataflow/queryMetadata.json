@@ -1,0 +1,38 @@
+{
+  "formatVersion": "202502",
+  "computeEngineSettings": {},
+  "name": "sales_df_silver",
+  "queryGroups": [],
+  "documentLocale": "en-US",
+  "queriesMetadata": {
+    "bronze_customers": {
+      "queryId": "d2ba120f-ea51-42a6-8ca3-fa7abc7892cc",
+      "queryName": "bronze_customers",
+      "loadEnabled": false
+    },
+    "bronze_products": {
+      "queryId": "8f605d69-8f1e-42ae-8ba6-1b73d3c17f5d",
+      "queryName": "bronze_products",
+      "loadEnabled": false
+    },
+    "bronze_customers_DataDestination": {
+      "queryId": "db10306c-aba6-4969-bd05-32c20c5a606c",
+      "queryName": "bronze_customers_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "bronze_products_DataDestination": {
+      "queryId": "490e6932-74a8-42ec-b8b8-535bae357596",
+      "queryName": "bronze_products_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    }
+  },
+  "connections": [
+    {
+      "path": "Lakehouse",
+      "kind": "Lakehouse",
+      "connectionId": "{\"ClusterId\":\"2b845629-c461-403b-b5b6-32db90639cc3\",\"DatasourceId\":\"090f4169-f630-49b5-a67e-06c46afad888\"}"
+    }
+  ]
+}

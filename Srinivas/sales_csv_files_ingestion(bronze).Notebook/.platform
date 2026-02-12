@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "sales_csv_files_ingestion(bronze)"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "d2640845-b81a-95ee-43cb-89977f53c7e5"
+  }
+}
