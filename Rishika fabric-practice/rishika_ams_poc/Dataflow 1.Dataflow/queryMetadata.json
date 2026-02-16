@@ -1,0 +1,121 @@
+{
+  "formatVersion": "202502",
+  "computeEngineSettings": {},
+  "name": "Dataflow 1",
+  "queryGroups": [],
+  "documentLocale": "en-US",
+  "gatewayObjectId": "d738923a-135a-4031-9017-c0359c509152",
+  "queriesMetadata": {
+    "Categories": {
+      "queryId": "6fefab84-bb2f-4cec-8217-02c91dc536f4",
+      "queryName": "Categories",
+      "loadEnabled": false
+    },
+    "ServiceCategoryMap": {
+      "queryId": "50915d61-3e6a-4226-a7de-0a72dbc599bb",
+      "queryName": "ServiceCategoryMap",
+      "loadEnabled": false
+    },
+    "ServiceGroupMap": {
+      "queryId": "480a9532-0c4a-4a20-be9f-fb1d8abc1e13",
+      "queryName": "ServiceGroupMap",
+      "loadEnabled": false
+    },
+    "SLADefinitions": {
+      "queryId": "bacef825-ed24-468b-bacd-c60b190d7538",
+      "queryName": "SLADefinitions",
+      "loadEnabled": false
+    },
+    "staging Services_Stg": {
+      "queryId": "8886012a-acf4-452f-a4e7-c50f6be5e5c8",
+      "queryName": "staging Services_Stg",
+      "loadEnabled": false
+    },
+    "staging SupportGroups_Stg": {
+      "queryId": "e23ad336-c1f1-4c8b-97b1-962c89447ad3",
+      "queryName": "staging SupportGroups_Stg",
+      "loadEnabled": false
+    },
+    "staging Tickets_Stg": {
+      "queryId": "b5619e04-7af4-4fbd-8357-b8a65adc3fbd",
+      "queryName": "staging Tickets_Stg",
+      "loadEnabled": false
+    },
+    "staging TicketWorklogs_Stg": {
+      "queryId": "1d572c65-bb6d-41dd-bba4-9ae294689a95",
+      "queryName": "staging TicketWorklogs_Stg",
+      "loadEnabled": false
+    },
+    "staging Users_Stg": {
+      "queryId": "24aaeb8f-243e-4195-9a80-fb5cc40b5d87",
+      "queryName": "staging Users_Stg",
+      "loadEnabled": false
+    },
+    "Categories_DataDestination": {
+      "queryId": "c090d567-621c-416b-8cda-f9ff15a699e2",
+      "queryName": "Categories_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "SLADefinitions_DataDestination": {
+      "queryId": "623be55e-8929-43a0-9e58-dabf2a6414ed",
+      "queryName": "SLADefinitions_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "ServiceGroupMap_DataDestination": {
+      "queryId": "74819c16-8d20-4adc-934e-24dbc3e26e06",
+      "queryName": "ServiceGroupMap_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "ServiceCategoryMap_DataDestination": {
+      "queryId": "82faa6b5-2084-4c3d-b2d1-dfd21781b1cc",
+      "queryName": "ServiceCategoryMap_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging Services_Stg_DataDestination": {
+      "queryId": "f30b56bf-74e5-479c-99bc-3ba95ded87de",
+      "queryName": "staging Services_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging SupportGroups_Stg_DataDestination": {
+      "queryId": "775319f4-9057-46ce-af3f-0f5d9132784d",
+      "queryName": "staging SupportGroups_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging Tickets_Stg_DataDestination": {
+      "queryId": "b4819669-0622-47e1-bfce-b9da5b07d5a6",
+      "queryName": "staging Tickets_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging TicketWorklogs_Stg_DataDestination": {
+      "queryId": "dcd0c305-e703-434a-b04a-0dc3239a7940",
+      "queryName": "staging TicketWorklogs_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging Users_Stg_DataDestination": {
+      "queryId": "af0785e1-a073-473a-b98f-024624f3efb7",
+      "queryName": "staging Users_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    }
+  },
+  "connections": [
+    {
+      "path": "cognine-l75;TicketingPOC",
+      "kind": "SQL",
+      "connectionId": "{\"ClusterId\":\"d738923a-135a-4031-9017-c0359c509152\",\"DatasourceId\":\"55ee2718-a41e-41ce-9e18-c11f5298a604\"}"
+    },
+    {
+      "path": "Lakehouse",
+      "kind": "Lakehouse",
+      "connectionId": "{\"ClusterId\":\"a7841ba4-1c15-4f41-885e-34e6498c4d9e\",\"DatasourceId\":\"3e3570e1-7f9d-4451-88f9-2e0743a40b7b\"}"
+    }
+  ]
+}

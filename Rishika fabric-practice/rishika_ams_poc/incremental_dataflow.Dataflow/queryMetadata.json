@@ -1,0 +1,77 @@
+{
+  "formatVersion": "202502",
+  "computeEngineSettings": {},
+  "name": "incremental_dataflow",
+  "queryGroups": [],
+  "documentLocale": "en-US",
+  "gatewayObjectId": "d738923a-135a-4031-9017-c0359c509152",
+  "queriesMetadata": {
+    "staging Services_Stg": {
+      "queryId": "02d52b01-1e84-41f0-b16e-e161384769c9",
+      "queryName": "staging Services_Stg",
+      "loadEnabled": false
+    },
+    "staging SupportGroups_Stg": {
+      "queryId": "347e8c72-f85b-4303-aacf-208737a37aaa",
+      "queryName": "staging SupportGroups_Stg",
+      "loadEnabled": false
+    },
+    "staging Tickets_Stg": {
+      "queryId": "db369105-b9e7-4b9f-9f27-c10b73a77fc6",
+      "queryName": "staging Tickets_Stg",
+      "loadEnabled": false
+    },
+    "staging TicketWorklogs_Stg": {
+      "queryId": "b3adfa57-dd9a-4bb1-9341-6068b7dedea3",
+      "queryName": "staging TicketWorklogs_Stg",
+      "loadEnabled": false
+    },
+    "staging Users_Stg": {
+      "queryId": "f55a5689-b95b-4a1b-aaf9-c3df068c91fb",
+      "queryName": "staging Users_Stg",
+      "loadEnabled": false
+    },
+    "staging Services_Stg_DataDestination": {
+      "queryId": "03802904-4944-4a57-8fcb-bf72df6172cb",
+      "queryName": "staging Services_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging SupportGroups_Stg_DataDestination": {
+      "queryId": "079b6ba6-292a-4504-bd24-37ca1a45a923",
+      "queryName": "staging SupportGroups_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging Tickets_Stg_DataDestination": {
+      "queryId": "445dd8be-bbd4-410d-9f39-0054065a955d",
+      "queryName": "staging Tickets_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging TicketWorklogs_Stg_DataDestination": {
+      "queryId": "308d8290-be93-412c-b6fc-69550277ccd7",
+      "queryName": "staging TicketWorklogs_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    },
+    "staging Users_Stg_DataDestination": {
+      "queryId": "c0c1b459-d871-4d57-bcd0-5bfe05c4fc3b",
+      "queryName": "staging Users_Stg_DataDestination",
+      "isHidden": true,
+      "loadEnabled": false
+    }
+  },
+  "connections": [
+    {
+      "path": "cognine-l75;TicketingPOC",
+      "kind": "SQL",
+      "connectionId": "{\"ClusterId\":\"d738923a-135a-4031-9017-c0359c509152\",\"DatasourceId\":\"55ee2718-a41e-41ce-9e18-c11f5298a604\"}"
+    },
+    {
+      "path": "Lakehouse",
+      "kind": "Lakehouse",
+      "connectionId": "{\"ClusterId\":\"a7841ba4-1c15-4f41-885e-34e6498c4d9e\",\"DatasourceId\":\"3e3570e1-7f9d-4451-88f9-2e0743a40b7b\"}"
+    }
+  ]
+}

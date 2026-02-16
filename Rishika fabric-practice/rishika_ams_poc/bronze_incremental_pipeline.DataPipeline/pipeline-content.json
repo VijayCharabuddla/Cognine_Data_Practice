@@ -1,0 +1,73 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "SqlServerStoredProcedure",
+        "typeProperties": {
+          "database": "TicketingPOC",
+          "storedProcedureName": "dbo.sp_Load_CDC_To_Staging"
+        },
+        "externalReferences": {
+          "connection": "55ee2718-a41e-41ce-9e18-c11f5298a604"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Stored procedure1",
+        "dependsOn": []
+      },
+      {
+        "type": "RefreshDataflow",
+        "typeProperties": {
+          "dataflowId": "e212bdb3-b67a-bb33-4881-5a5c522a3844",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "notifyOption": "NoNotification",
+          "dataflowType": "DataflowFabric"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "incremental_dataflow",
+        "dependsOn": [
+          {
+            "activity": "Stored procedure1",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "1b058a88-5b6f-9b5a-4c8d-c1cef1706dfd",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "bronze_merge",
+        "dependsOn": [
+          {
+            "activity": "incremental_dataflow",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

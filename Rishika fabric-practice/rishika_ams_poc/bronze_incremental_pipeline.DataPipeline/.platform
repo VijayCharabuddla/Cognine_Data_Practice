@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
     "type": "DataPipeline",
-    "displayName": "master pipeline"
+    "displayName": "bronze_incremental_pipeline"
   },
   "config": {
     "version": "2.0",
-    "logicalId": "1f1f56b6-4df4-a241-454d-dc63aa04123b"
+    "logicalId": "2bc2c820-21b4-8c1d-4284-a8ec44151e2f"
   }
 }
