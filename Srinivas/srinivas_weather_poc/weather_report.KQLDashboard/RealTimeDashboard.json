@@ -1,0 +1,108 @@
+{
+  "schema_version": 68,
+  "autoRefresh": {
+    "enabled": true,
+    "defaultInterval": "5m",
+    "minInterval": "1m"
+  },
+  "tiles": [
+    {
+      "id": "b33edce4-1c69-4d2d-b4cb-018fe26e79f7",
+      "title": "temp by city",
+      "visualType": "column",
+      "pageId": "c41ba099-2f09-47a9-9f94-7a0520a93138",
+      "layout": {
+        "x": 8,
+        "y": 0,
+        "width": 11,
+        "height": 8
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "26cd3611-8652-48d6-a82b-201fc52092da"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {
+          "temp_c": "color--(4)"
+        },
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilter": [],
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "drillthrough": [],
+        "selectedDataOnLoad": {
+          "all": true,
+          "limit": 10
+        }
+      }
+    }
+  ],
+  "baseQueries": [],
+  "parameters": [
+    {
+      "kind": "duration",
+      "id": "39f26084-6598-40e0-817b-e306c87561f9",
+      "displayName": "Time range",
+      "description": "",
+      "beginVariableName": "_startTime",
+      "endVariableName": "_endTime",
+      "defaultValue": {
+        "kind": "dynamic",
+        "count": 1,
+        "unit": "hours"
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
+    }
+  ],
+  "dataSources": [
+    {
+      "kind": "kusto-trident",
+      "id": "ebd5dd40-0376-4884-8c16-66ffc694cc05",
+      "name": "weather_streaming_data",
+      "clusterUri": "",
+      "database": "b743e2f8-a365-804e-4e15-ab6812df0d84",
+      "workspace": "00000000-0000-0000-0000-000000000000",
+      "scopeId": "kusto-trident"
+    }
+  ],
+  "pages": [
+    {
+      "name": "Page 1",
+      "id": "c41ba099-2f09-47a9-9f94-7a0520a93138"
+    }
+  ],
+  "queries": [
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "ebd5dd40-0376-4884-8c16-66ffc694cc05"
+      },
+      "text": "silver_environment_clean\r\n| summarize arg_max(event_time, *) by city\r\n| project city, temp_c\r\n| order by temp_c desc\r\n",
+      "id": "26cd3611-8652-48d6-a82b-201fc52092da",
+      "usedVariables": []
+    }
+  ]
+}

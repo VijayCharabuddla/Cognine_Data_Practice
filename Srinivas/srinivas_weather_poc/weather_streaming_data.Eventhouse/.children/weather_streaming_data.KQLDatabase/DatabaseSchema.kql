@@ -2,6 +2,107 @@
 // Use management commands in this script to configure your database items, such as tables, functions, materialized views, and more.
 
 
-.create-merge table silver_environment_clean (city:string, country:string, latitude:real, longitude:real, event_time:datetime, event_date:datetime, event_hour:int, temp_c:real, humidity_percent:int, wind_kph:real, uv_index:real, uv_band:string, pm2_5:real, pm10:real, co:real, no2:real, o3:real, aqi_index:int, aqi_band:string, ingestion_time:datetime) with (folder = "Silver") 
+.create-merge table silver_environment_clean (city:string, country:string, latitude:real, longitude:real, event_time:datetime, event_date:datetime, event_hour:int, temp_c:real, humidity_percent:int, wind_kph:real, uv_index:real, uv_band:string, pm2_5:real, pm10:real, co:real, no2:real, o3:real, aqi_index:int, aqi_band:string, heat_wave_level:string, environmental_alert:string, ingestion_time:datetime) with (folder = "Silver") 
 .create-merge table weather_Raw_data (city:string, country:string, lat:real, lon:real, localtime:datetime, temp_c:real, humidity:int, wind_kph:real, uv:real, condition_text:string, us_epa_index:int, ingestion_time_utc:datetime, pm2_5:real, pm10:real, co:real, no2:real, o3:int, so2:real) with (folder = "Bronze") 
+.create-or-alter function with (folder = "Functions", skipvalidation = "true") TransformWeatherToSilver() {
+     weather_Raw_data
+    | extend
+        city = trim(" ", city),
+        country = trim(" ", country),
+        latitude = todouble(lat),
+        longitude = todouble(lon),
+        event_time = localtime,
+        event_date = startofday(localtime),
+        event_hour = toint(datetime_part("hour", localtime)),
+        temp_c = todouble(temp_c),
+        humidity_percent = toint(humidity),
+        wind_kph = todouble(wind_kph),
+        uv_index = todouble(uv),
+        pm2_5 = todouble(pm2_5),
+        pm10 = todouble(pm10),
+        co = todouble(co),
+        no2 = todouble(no2),
+        o3 = todouble(o3),
+        aqi_index = toint(us_epa_index),
+        ingestion_time = todatetime(ingestion_time_utc)
+    | extend
+        uv_band = case(
+              uv_index >= 11,
+              "Extreme",
+              uv_index >= 8,
+              "Very High",
+              uv_index >= 6,
+              "High",
+              uv_index >= 3,
+              "Moderate",
+              "Low"
+          ),
+        aqi_band = case(
+               aqi_index == 1,
+               "Good",
+               aqi_index == 2,
+               "Moderate",
+               aqi_index == 3,
+               "Unhealthy for Sensitive Groups",
+               aqi_index == 4,
+               "Unhealthy",
+               aqi_index == 5,
+               "Very Unhealthy",
+               aqi_index == 6,
+               "Hazardous",
+               "Unknown"
+           )
+    | extend
+        heat_wave_level = case(
+                      temp_c >= 45,
+                      "Severe Heat Wave",
+                      temp_c >= 40,
+                      "Heat Wave",
+                      temp_c >= 35 and humidity_percent >= 60,
+                      "High Heat Stress",
+                      temp_c >= 35,
+                      "Hot",
+                      "Normal"
+                  )
+    | extend 
+        environmental_alert = case(
+                          heat_wave_level == "Severe Heat Wave" or aqi_index >= 5,
+                          "Extreme Risk",
+                          heat_wave_level == "Heat Wave" or aqi_index >= 4 or uv_index >= 8,
+                          "High Risk",
+                          heat_wave_level == "High Heat Stress" or aqi_index >= 3,
+                          "Moderate Risk",
+                          "Low Risk"
+                      )
+    | where humidity_percent between (0 .. 100)
+    | where uv_index between (0 .. 15)
+    | where aqi_index between (1 .. 6)
+    | where latitude between (-90 .. 90)
+    | where longitude between (-180 .. 180)
+    | summarize arg_max(ingestion_time, *) by city, event_time
+    | project
+        city,
+        country,
+        latitude,
+        longitude,
+        event_time,
+        event_date,
+        event_hour,
+        temp_c,
+        humidity_percent,
+        wind_kph,
+        uv_index,
+        uv_band,
+        pm2_5,
+        pm10,
+        co,
+        no2,
+        o3,
+        aqi_index,
+        aqi_band,
+        heat_wave_level,
+        environmental_alert,
+        ingestion_time
+    }
 .alter table weather_Raw_data policy retention @'{"SoftDeletePeriod":"30.00:00:00","Recoverability":"Enabled"}'
+.alter table silver_environment_clean policy update "[{\"IsEnabled\":true,\"Source\":\"weather_Raw_data\",\"Query\":\"TransformWeatherToSilver()\",\"IsTransactional\":false,\"PropagateIngestionProperties\":false,\"ManagedIdentity\":null}]"
