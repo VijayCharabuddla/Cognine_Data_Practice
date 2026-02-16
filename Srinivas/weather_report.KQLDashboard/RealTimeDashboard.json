@@ -1,0 +1,72 @@
+{
+  "autoRefresh": {
+    "enabled": false
+  },
+  "baseQueries": [],
+  "tiles": [
+    {
+      "id": "dd5dbf43-36ab-4c37-8936-d693dfe7a329",
+      "queryRef": {
+        "kind": "query",
+        "queryId": "8bcc5061-b056-4710-b02e-2e33b0591823"
+      },
+      "title": "weather_live Table Preview",
+      "visualType": "table",
+      "pageId": "c41ba099-2f09-47a9-9f94-7a0520a93138",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 6,
+        "height": 6
+      },
+      "visualOptions": {}
+    }
+  ],
+  "dataSources": [
+    {
+      "id": "ebd5dd40-0376-4884-8c16-66ffc694cc05",
+      "kind": "kusto-trident",
+      "clusterUri": "",
+      "database": "b743e2f8-a365-804e-4e15-ab6812df0d84",
+      "name": "weather_streaming_data",
+      "scopeId": "kusto-trident",
+      "workspace": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "pages": [
+    {
+      "name": "Page 1",
+      "id": "c41ba099-2f09-47a9-9f94-7a0520a93138"
+    }
+  ],
+  "parameters": [
+    {
+      "kind": "duration",
+      "id": "39f26084-6598-40e0-817b-e306c87561f9",
+      "displayName": "Time range",
+      "description": "",
+      "beginVariableName": "_startTime",
+      "endVariableName": "_endTime",
+      "defaultValue": {
+        "kind": "dynamic",
+        "count": 1,
+        "unit": "hours"
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
+    }
+  ],
+  "queries": [
+    {
+      "id": "8bcc5061-b056-4710-b02e-2e33b0591823",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "ebd5dd40-0376-4884-8c16-66ffc694cc05"
+      },
+      "usedVariables": [],
+      "text": "['weather_live'] | take 10"
+    }
+  ],
+  "schema_version": 69
+}

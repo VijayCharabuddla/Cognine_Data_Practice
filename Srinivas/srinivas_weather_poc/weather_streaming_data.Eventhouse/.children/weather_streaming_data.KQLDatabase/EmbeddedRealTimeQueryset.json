@@ -1,0 +1,34 @@
+{
+  "queryset": {
+    "version": "1.0.0",
+    "dataSources": [
+      {
+        "id": "6fdd0b48-1e45-4e00-851d-5104d61e38f9",
+        "clusterUri": "https://trd-1ndhfr5utev0h9c43p.z6.kusto.fabric.microsoft.com",
+        "type": "Fabric",
+        "databaseItemId": "12df0d84-ab68-4e15-804e-a365b743e2f8",
+        "databaseItemName": "weather_streaming_data"
+      }
+    ],
+    "tabs": [
+      {
+        "id": "43b8272b-28c8-4c2d-9301-c24d2113575f",
+        "content": "weather_live\n|\n\n// View a representation of the schema as a table with column names, column type, and data type.\nweather_Raw_data\n| getschema\n| project ColumnName,ColumnType\n ",
+        "title": "Tab",
+        "dataSourceId": "6fdd0b48-1e45-4e00-851d-5104d61e38f9"
+      },
+      {
+        "id": "01e330b3-5dab-4c0e-8ce8-4730ace97b3c",
+        "content": ".create table weather_Raw_data(\n    city: string,\n    country: string,\n    lat: real,\n    lon: real,\n    localtime: datetime,\n    temp_c: real,\n    humidity: int,\n    wind_kph: real,\n    uv: real,\n    condition_text: string,\n    us_epa_index: int,\n    ingestion_time_utc: datetime,\n    pm2_5: real,\n    pm10: real,\n    co: real,\n    no2: real,\n    o3: int,\n    so2: real \n)\nwith (folder=\"Bronze\")\n\n\n\n.alter table weather_Raw_data policy ingestiontime true;\n\n.alter-merge table weather_Raw_data policy retention softdelete = 30d;\n\nweather_Raw_data\n| take 100\n\nweather_Raw_data\n| summarize\n    min_temp = min(temp_c),\n    max_temp = max(temp_c),\n    min_humidity = min(humidity),\n    max_humidity = max(humidity),\n    min_uv = min(uv),\n    max_uv = max(uv)\n\n\n.drop table weather_Raw_data;\n\n\n\n\n\n\n",
+        "title": "Weather_Bronze_Date",
+        "dataSourceId": "6fdd0b48-1e45-4e00-851d-5104d61e38f9"
+      },
+      {
+        "id": "add3cc4e-b9ff-48c0-8491-659fcb3b501c",
+        "content": ".alter table silver_environment_clean (\n    city: string,\n    country: string,\n    latitude: real,\n    longitude: real,\n    event_time: datetime,\n    event_date: datetime,\n    event_hour: int,\n    temp_c: real,\n    humidity_percent: int,\n    wind_kph: real,\n    uv_index: real,\n    uv_band: string,\n    pm2_5: real,\n    pm10: real,\n    co: real,\n    no2: real,\n    o3: real,\n    aqi_index: int,\n    aqi_band: string,\n    ingestion_time: datetime\n)\nwith (folder=\"Silver\")\n\nsilver_environment_clean\n| parse event_hour with * \"event_hour\" event_hour:long\n\n\n.set-or-replace silver_environment_clean <|\nweather_Raw_data\n| extend\n    city = trim(\" \", city),\n    country = trim(\" \", country),\n    latitude = todouble(lat),\n    longitude = todouble(lon),\n    event_time = localtime,\n    event_date = startofday(localtime),\n      event_hour = toint(datetime_part(\"hour\", localtime)),\n    temparature_c = todouble(temp_c),\n    humidity_percent = toint(humidity),\n    wind_kph = todouble(wind_kph),\n    uv_index = todouble(uv)\n|extend\n    uv_band = case(\n        uv_index >= 11, \"Extreme\",\n        uv_index >= 8, \"Very High\",\n        uv_index >= 6, \"High\",\n        uv_index >= 3, \"Moderate\",\n        \"Low\"\n    ),\n    pm2_5 = todouble(pm2_5),\n    pm10 = todouble(pm10),\n    co = todouble(co),\n    no2 = todouble(no2),\n    o3 = todouble(o3),\n    aqi_index = toint(us_epa_index)\n|extend\n    aqi_band = case(\n        aqi_index == 1, \"Good\",\n        aqi_index == 2, \"Moderate\",\n        aqi_index == 3, \"Unhealthy for Sensitive Groups\",\n        aqi_index == 4, \"Unhealthy\",\n        aqi_index == 5, \"Very Unhealthy\",\n        aqi_index == 6, \"Hazardous\",\n        \"Unknown\"\n    ),\n    ingestion_time = todatetime(ingestion_time_utc)\n| project\n    city,\n    country,\n    latitude,\n    longitude,\n    event_time,\n    event_date,\n    event_hour,\n    temparature_c,\n    humidity_percent,\n    wind_kph,\n    uv_index,\n    uv_band,\n    pm2_5,\n    pm10,\n    co,\n    no2,\n    o3,\n    aqi_index,\n    aqi_band,\n    ingestion_time\n\nsilver_environment_clean\n|where humidity_percent between (0 .. 100)\n| where uv_index >= 0 and uv_index <= 15\n| where aqi_index between (1 .. 6)\n| where latitude between (-90 .. 90)\n| where longitude between (-180 .. 180)\n\nsilver_environment_clean\n| take 100",
+        "title": "weather_Transformations",
+        "dataSourceId": "6fdd0b48-1e45-4e00-851d-5104d61e38f9"
+      }
+    ]
+  }
+}

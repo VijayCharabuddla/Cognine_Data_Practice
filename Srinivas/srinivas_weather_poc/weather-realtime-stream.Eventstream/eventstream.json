@@ -1,18 +1,13 @@
 {
   "sources": [
     {
-      "id": "81c44ed6-c626-4252-9865-c8c58e0c6bb4",
+      "id": "ee5b148e-5892-4590-83e1-793cc8ab4394",
       "name": "azure-event-hub",
-      "type": "AzureEventHub",
+      "type": "AzureEventHubExtended",
       "properties": {
         "dataConnectionId": "7b35cc30-8ad4-4d6f-8a46-65813523bdd1",
         "consumerGroupName": "$Default",
-        "inputSerialization": {
-          "type": "Json",
-          "properties": {
-            "encoding": "UTF8"
-          }
-        }
+        "startPosition": "Latest"
       }
     }
   ],
@@ -26,7 +21,7 @@
         "workspaceId": "00000000-0000-0000-0000-000000000000",
         "itemId": "b743e2f8-a365-804e-4e15-ab6812df0d84",
         "databaseName": "weather_streaming_data",
-        "tableName": "weather_live",
+        "tableName": "weather_Raw_data",
         "inputSerialization": {
           "type": "Json",
           "properties": {
@@ -105,8 +100,50 @@
                 "items": null
               },
               {
+                "name": "us_epa_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
                 "name": "ingestion_time_utc",
-                "type": "Nvarchar(max)",
+                "type": "DateTime",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "pm2_5",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "pm10",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "co",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "no2",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "o3",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "so2",
+                "type": "Float",
                 "fields": null,
                 "items": null
               }
@@ -267,11 +304,96 @@
               "column": {
                 "expressionType": "ColumnReference",
                 "node": null,
+                "columnName": "us_epa_index",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "us_epa_index"
+          },
+          {
+            "type": "Cast",
+            "properties": {
+              "targetDataType": "DateTime",
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
                 "columnName": "ingestion_time_utc",
                 "columnPathSegments": []
               }
             },
             "alias": "ingestion_time_utc"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "pm2_5",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "pm2_5"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "pm10",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "pm10"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "co",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "co"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "no2",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "no2"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "o3",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "o3"
+          },
+          {
+            "type": "Rename",
+            "properties": {
+              "column": {
+                "expressionType": "ColumnReference",
+                "node": null,
+                "columnName": "so2",
+                "columnPathSegments": []
+              }
+            },
+            "alias": "so2"
           }
         ]
       },
@@ -341,26 +463,50 @@
                 "items": null
               },
               {
-                "name": "ingestion_time_utc",
-                "type": "Nvarchar(max)",
+                "name": "pm2_5",
+                "type": "Float",
                 "fields": null,
                 "items": null
               },
               {
-                "name": "EventProcessedUtcTime",
-                "type": "DateTime",
+                "name": "pm10",
+                "type": "Float",
                 "fields": null,
                 "items": null
               },
               {
-                "name": "PartitionId",
+                "name": "co",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "no2",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "o3",
                 "type": "BigInt",
                 "fields": null,
                 "items": null
               },
               {
-                "name": "EventEnqueuedUtcTime",
-                "type": "DateTime",
+                "name": "so2",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "us_epa_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ingestion_time_utc",
+                "type": "Nvarchar(max)",
                 "fields": null,
                 "items": null
               }
