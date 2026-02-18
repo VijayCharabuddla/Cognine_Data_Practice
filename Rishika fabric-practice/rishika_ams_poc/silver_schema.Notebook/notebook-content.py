@@ -23,53 +23,7 @@
 # CELL ********************
 
 # MAGIC %%sql
-# MAGIC CREATE TABLE IF NOT EXISTS silver_ticket (
-# MAGIC     ticket_id STRING,
-# MAGIC     ticket_type STRING,
-# MAGIC 
-# MAGIC     opened_ts TIMESTAMP,
-# MAGIC     closed_ts TIMESTAMP,
-# MAGIC     record_created_ts TIMESTAMP,
-# MAGIC     record_updated_ts TIMESTAMP,
-# MAGIC 
-# MAGIC     status_code STRING,
-# MAGIC     status_label STRING,
-# MAGIC 
-# MAGIC     priority_code STRING,
-# MAGIC     priority_label STRING,
-# MAGIC 
-# MAGIC     impact_code STRING,
-# MAGIC     urgency_code STRING,
-# MAGIC 
-# MAGIC     requester_id STRING,
-# MAGIC     assigned_group_id STRING,
-# MAGIC     service_id STRING,
-# MAGIC     category_id STRING,
-# MAGIC     sla_id STRING,
-# MAGIC 
-# MAGIC     resolution_minutes INT,
-# MAGIC 
-# MAGIC     status_unknown_flag BOOLEAN,
-# MAGIC     priority_unknown_flag BOOLEAN,
-# MAGIC     invalid_date_flag BOOLEAN,
-# MAGIC     negative_resolution_flag BOOLEAN,
-# MAGIC 
-# MAGIC     load_timestamp TIMESTAMP
-# MAGIC )
-# MAGIC USING DELTA;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC CREATE TABLE IF NOT EXISTS silver_user (
+# MAGIC CREATE TABLE silver_user (
 # MAGIC     user_id STRING,
 # MAGIC 
 # MAGIC     user_type STRING,
@@ -86,7 +40,8 @@
 # MAGIC 
 # MAGIC     created_ts TIMESTAMP,
 # MAGIC 
-# MAGIC     load_timestamp TIMESTAMP
+# MAGIC     ingestion_ts TIMESTAMP,      -- from Bronze
+# MAGIC     load_timestamp TIMESTAMP     -- when Silver processed
 # MAGIC )
 # MAGIC USING DELTA;
 
@@ -101,7 +56,205 @@
 # CELL ********************
 
 # MAGIC %%sql
-# MAGIC drop table silver_user
+# MAGIC %%sql
+# MAGIC --create support groups
+# MAGIC create table if not exists silver_supportgroups (
+# MAGIC     group_id string,
+# MAGIC 
+# MAGIC     group_name string,
+# MAGIC     location string,
+# MAGIC 
+# MAGIC     active_flag string,
+# MAGIC     ingestion_ts timestamp,
+# MAGIC     load_timestamp timestamp
+# MAGIC )
+# MAGIC using delta;
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC %%sql
+# MAGIC --table creation
+# MAGIC create table if not exists silver_services (
+# MAGIC     service_id string,
+# MAGIC 
+# MAGIC     service_name string,
+# MAGIC     service_owner_id string,
+# MAGIC 
+# MAGIC     criticality string,
+# MAGIC     active_flag string,
+# MAGIC 
+# MAGIC     ingestion_ts timestamp,
+# MAGIC     load_timestamp timestamp
+# MAGIC )
+# MAGIC using delta;
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC --create
+# MAGIC create table if not exists silver_sla_definitions (
+# MAGIC     sla_id string,
+# MAGIC 
+# MAGIC     priority string,
+# MAGIC     response_minutes int,
+# MAGIC     resolution_minutes int,
+# MAGIC 
+# MAGIC     load_timestamp timestamp
+# MAGIC )
+# MAGIC using delta;
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC create table if not exists silver_categories (
+# MAGIC     category_id string,
+# MAGIC     category_name string,
+# MAGIC     subcategory_name string,
+# MAGIC     load_timestamp timestamp
+# MAGIC )
+# MAGIC using delta;
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC create table if not exists silver_servicecategorymap (
+# MAGIC     service_id string,
+# MAGIC     category_id string,
+# MAGIC     load_timestamp timestamp
+# MAGIC )
+# MAGIC using delta;
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC create table if not exists silver_servicegroupmap (
+# MAGIC     service_id string,
+# MAGIC     group_id string,
+# MAGIC     load_timestamp timestamp
+# MAGIC )
+# MAGIC using delta;
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC create table if not exists silver_tickets (
+# MAGIC     ticket_id string,
+# MAGIC 
+# MAGIC     ticket_type string,
+# MAGIC 
+# MAGIC     opened_ts timestamp,
+# MAGIC     closed_ts timestamp,
+# MAGIC 
+# MAGIC     ticket_status string,
+# MAGIC 
+# MAGIC     requester_id string,
+# MAGIC     assigned_group_id string,
+# MAGIC     service_id string,
+# MAGIC     category_id string,
+# MAGIC 
+# MAGIC     priority string,
+# MAGIC     impact string,
+# MAGIC     urgency string,
+# MAGIC 
+# MAGIC     sla_id string,
+# MAGIC 
+# MAGIC     location string,
+# MAGIC     short_description string,
+# MAGIC     description string,
+# MAGIC 
+# MAGIC     record_created_ts timestamp,
+# MAGIC     record_updated_ts timestamp,
+# MAGIC 
+# MAGIC     resolution_minutes int,
+# MAGIC     sla_target_minutes int,
+# MAGIC     sla_breach_flag boolean,
+# MAGIC 
+# MAGIC     invalid_date_flag boolean,
+# MAGIC 
+# MAGIC     ingestion_ts timestamp,
+# MAGIC     load_timestamp timestamp
+# MAGIC )
+# MAGIC using delta;
+# MAGIC 
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC --create
+# MAGIC create table if not exists silver_ticket_worklogs (
+# MAGIC     worklog_id string,
+# MAGIC     ticket_id string,
+# MAGIC 
+# MAGIC     updated_by string,
+# MAGIC     update_type string,
+# MAGIC 
+# MAGIC     update_ts timestamp,
+# MAGIC 
+# MAGIC     worklog_comment string,
+# MAGIC 
+# MAGIC     invalid_timestamp_flag boolean,
+# MAGIC 
+# MAGIC     ingestion_ts timestamp,
+# MAGIC     load_timestamp timestamp
+# MAGIC )
+# MAGIC using delta;
+
 
 # METADATA ********************
 

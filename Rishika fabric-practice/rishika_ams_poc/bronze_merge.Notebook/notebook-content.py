@@ -315,31 +315,3 @@
 # META   "language": "sparksql",
 # META   "language_group": "synapse_pyspark"
 # META }
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC TRUNCATE TABLE delta_Users_Stg;
-# MAGIC TRUNCATE TABLE delta_Services_Stg;
-# MAGIC TRUNCATE TABLE delta_SupportGroups_Stg;
-# MAGIC TRUNCATE TABLE delta_TicketWorklogs_Stg;
-# MAGIC TRUNCATE TABLE staging_Tickets_Stg;
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC truncate table delta_SupportGroups_Stg
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }

@@ -22,142 +22,7 @@
 
 # MARKDOWN ********************
 
-# **<h1>TICKETS</h1>**
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC DROP TABLE IF EXISTS silver_user;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC CREATE TABLE silver_user (
-# MAGIC     user_id STRING,
-# MAGIC 
-# MAGIC     user_type STRING,
-# MAGIC 
-# MAGIC     first_name STRING,
-# MAGIC     last_name STRING,
-# MAGIC     full_name STRING,
-# MAGIC 
-# MAGIC     email STRING,
-# MAGIC     location STRING,
-# MAGIC 
-# MAGIC     active_flag STRING,
-# MAGIC     is_deleted STRING,
-# MAGIC 
-# MAGIC     created_ts TIMESTAMP,
-# MAGIC 
-# MAGIC     ingestion_ts TIMESTAMP,      -- from Bronze
-# MAGIC     load_timestamp TIMESTAMP     -- when Silver processed
-# MAGIC )
-# MAGIC USING DELTA;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-
-%%sql
---ticket incremental source
-CREATE OR REPLACE TEMP VIEW incremental_user AS
-SELECT *
-FROM bronze_Users_Stg
-WHERE ingestion_ts > (
-    SELECT COALESCE(MAX(ingestion_ts), TIMESTAMP('1900-01-01'))
-    FROM silver_user
-);
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC --merge tickets
-# MAGIC MERGE INTO silver_ticket AS target
-# MAGIC USING transformed_incremental_ticket AS source
-# MAGIC ON target.ticket_id = source.ticket_id
-# MAGIC 
-# MAGIC WHEN MATCHED THEN UPDATE SET
-# MAGIC     target.ticket_type = source.ticket_type,
-# MAGIC     target.opened_ts = source.opened_ts,
-# MAGIC     target.closed_ts = source.closed_ts,
-# MAGIC     target.record_created_ts = source.record_created_ts,
-# MAGIC     target.record_updated_ts = source.record_updated_ts,
-# MAGIC     target.status_code = source.status_code,
-# MAGIC     target.status_label = source.status_label,
-# MAGIC     target.priority_code = source.priority_code,
-# MAGIC     target.priority_label = source.priority_label,
-# MAGIC     target.impact_code = source.impact_code,
-# MAGIC     target.urgency_code = source.urgency_code,
-# MAGIC     target.requester_id = source.requester_id,
-# MAGIC     target.assigned_group_id = source.assigned_group_id,
-# MAGIC     target.service_id = source.service_id,
-# MAGIC     target.category_id = source.category_id,
-# MAGIC     target.sla_id = source.sla_id,
-# MAGIC     target.resolution_minutes = source.resolution_minutes,
-# MAGIC     target.status_unknown_flag = source.status_unknown_flag,
-# MAGIC     target.priority_unknown_flag = source.priority_unknown_flag,
-# MAGIC     target.invalid_date_flag = source.invalid_date_flag,
-# MAGIC     target.negative_resolution_flag = source.negative_resolution_flag,
-# MAGIC     target.load_timestamp = source.load_timestamp
-# MAGIC 
-# MAGIC WHEN NOT MATCHED THEN INSERT *;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# MARKDOWN ********************
-
 # **<h1>USERS</h1>**
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC describe silver_user;
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
 
 # CELL ********************
 
@@ -166,9 +31,11 @@ WHERE ingestion_ts > (
 # MAGIC SELECT *
 # MAGIC FROM bronze_Users_Stg
 # MAGIC WHERE ingestion_ts > (
-# MAGIC     SELECT COALESCE(MAX(load_timestamp), TIMESTAMP('1900-01-01'))
+# MAGIC     SELECT COALESCE(MAX(ingestion_ts), TIMESTAMP('1900-01-01'))
 # MAGIC     FROM silver_user
 # MAGIC );
+# MAGIC 
+# MAGIC 
 
 
 # METADATA ********************
@@ -185,30 +52,19 @@ WHERE ingestion_ts > (
 # MAGIC CREATE OR REPLACE TEMP VIEW transformed_user AS
 # MAGIC SELECT
 # MAGIC     user_id,
-# MAGIC 
 # MAGIC     upper(trim(user_type)) AS user_type,
-# MAGIC 
 # MAGIC     initcap(trim(first_name)) AS first_name,
 # MAGIC     initcap(trim(last_name)) AS last_name,
-# MAGIC 
 # MAGIC     concat_ws(' ',
 # MAGIC         initcap(trim(first_name)),
 # MAGIC         initcap(trim(last_name))
 # MAGIC     ) AS full_name,
-# MAGIC 
 # MAGIC     lower(trim(email)) AS email,
-# MAGIC 
 # MAGIC     initcap(trim(location)) AS location,
-# MAGIC 
 # MAGIC     upper(trim(active_flag)) AS active_flag,
-# MAGIC     upper(trim(is_deleted)) AS is_deleted,
-# MAGIC 
 # MAGIC     CAST(created_date AS TIMESTAMP) AS created_ts,
-# MAGIC 
 # MAGIC     ingestion_ts,
-# MAGIC 
 # MAGIC     current_timestamp() AS load_timestamp
-# MAGIC 
 # MAGIC FROM incremental_user
 # MAGIC WHERE user_id IS NOT NULL;
 # MAGIC 
@@ -237,12 +93,64 @@ WHERE ingestion_ts > (
 # MAGIC     target.email = source.email,
 # MAGIC     target.location = source.location,
 # MAGIC     target.active_flag = source.active_flag,
-# MAGIC     target.is_deleted = source.is_deleted,
+# MAGIC     target.is_deleted = 'N',
 # MAGIC     target.created_ts = source.created_ts,
 # MAGIC     target.ingestion_ts = source.ingestion_ts,
 # MAGIC     target.load_timestamp = source.load_timestamp
 # MAGIC 
-# MAGIC WHEN NOT MATCHED THEN INSERT *;
+# MAGIC WHEN NOT MATCHED THEN INSERT (
+# MAGIC     user_id,
+# MAGIC     user_type,
+# MAGIC     first_name,
+# MAGIC     last_name,
+# MAGIC     full_name,
+# MAGIC     email,
+# MAGIC     location,
+# MAGIC     active_flag,
+# MAGIC     is_deleted,
+# MAGIC     created_ts,
+# MAGIC     ingestion_ts,
+# MAGIC     load_timestamp
+# MAGIC )
+# MAGIC VALUES (
+# MAGIC     source.user_id,
+# MAGIC     source.user_type,
+# MAGIC     source.first_name,
+# MAGIC     source.last_name,
+# MAGIC     source.full_name,
+# MAGIC     source.email,
+# MAGIC     source.location,
+# MAGIC     source.active_flag,
+# MAGIC     'N',
+# MAGIC     source.created_ts,
+# MAGIC     source.ingestion_ts,
+# MAGIC     source.load_timestamp
+# MAGIC );
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC --delete handling
+# MAGIC MERGE INTO silver_user AS target
+# MAGIC USING (
+# MAGIC     SELECT DISTINCT user_id
+# MAGIC     FROM delta_Users_Stg
+# MAGIC     WHERE `__$operation` = 1
+# MAGIC ) AS source
+# MAGIC ON target.user_id = source.user_id
+# MAGIC 
+# MAGIC WHEN MATCHED THEN
+# MAGIC     UPDATE SET
+# MAGIC         target.is_deleted = 'Y',
+# MAGIC         target.load_timestamp = current_timestamp();
 # MAGIC 
 
 
@@ -256,44 +164,6 @@ WHERE ingestion_ts > (
 # MARKDOWN ********************
 
 # **<h1>SUPPORT GROUPS</h1>**
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC --create support groups
-# MAGIC create table if not exists silver_supportgroups (
-# MAGIC     group_id string,
-# MAGIC 
-# MAGIC     group_name string,
-# MAGIC     location string,
-# MAGIC 
-# MAGIC     active_flag string,
-# MAGIC     ingestion_ts timestamp,
-# MAGIC     load_timestamp timestamp
-# MAGIC )
-# MAGIC using delta;
-# MAGIC 
-# MAGIC 
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC describe silver_supportgroups
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
 
 # CELL ********************
 
@@ -344,18 +214,62 @@ WHERE ingestion_ts > (
 
 # MAGIC %%sql
 # MAGIC --merge
-# MAGIC merge into silver_supportgroups as target
-# MAGIC using transformed_supportgroups as source
-# MAGIC on target.group_id = source.group_id
+# MAGIC MERGE INTO silver_supportgroups AS target
+# MAGIC USING transformed_supportgroups AS source
+# MAGIC ON target.group_id = source.group_id
 # MAGIC 
-# MAGIC when matched then update set
+# MAGIC WHEN MATCHED THEN UPDATE SET
 # MAGIC     target.group_name = source.group_name,
 # MAGIC     target.location = source.location,
 # MAGIC     target.active_flag = source.active_flag,
+# MAGIC     target.is_deleted = 'N',
 # MAGIC     target.ingestion_ts = source.ingestion_ts,
 # MAGIC     target.load_timestamp = source.load_timestamp
 # MAGIC 
-# MAGIC when not matched then insert *;
+# MAGIC WHEN NOT MATCHED THEN INSERT (
+# MAGIC     group_id,
+# MAGIC     group_name,
+# MAGIC     location,
+# MAGIC     active_flag,
+# MAGIC     is_deleted,
+# MAGIC     ingestion_ts,
+# MAGIC     load_timestamp
+# MAGIC )
+# MAGIC VALUES (
+# MAGIC     source.group_id,
+# MAGIC     source.group_name,
+# MAGIC     source.location,
+# MAGIC     source.active_flag,
+# MAGIC     'N',
+# MAGIC     source.ingestion_ts,
+# MAGIC     source.load_timestamp
+# MAGIC );
+# MAGIC 
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC --delete
+# MAGIC MERGE INTO silver_supportgroups AS target
+# MAGIC USING (
+# MAGIC     SELECT DISTINCT group_id
+# MAGIC     FROM delta_SupportGroups_Stg
+# MAGIC     WHERE `__$operation` = 1
+# MAGIC ) AS source
+# MAGIC ON target.group_id = source.group_id
+# MAGIC 
+# MAGIC WHEN MATCHED THEN
+# MAGIC     UPDATE SET
+# MAGIC         target.is_deleted = 'Y',
+# MAGIC         target.load_timestamp = current_timestamp();
 
 
 # METADATA ********************
@@ -368,32 +282,6 @@ WHERE ingestion_ts > (
 # MARKDOWN ********************
 
 # **<h1>SERVICES</h1>**
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC --table creation
-# MAGIC create table if not exists silver_services (
-# MAGIC     service_id string,
-# MAGIC 
-# MAGIC     service_name string,
-# MAGIC     service_owner_id string,
-# MAGIC 
-# MAGIC     criticality string,
-# MAGIC     active_flag string,
-# MAGIC 
-# MAGIC     ingestion_ts timestamp,
-# MAGIC     load_timestamp timestamp
-# MAGIC )
-# MAGIC using delta;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
 
 # CELL ********************
 
@@ -462,19 +350,65 @@ WHERE ingestion_ts > (
 
 # MAGIC %%sql
 # MAGIC --merge
-# MAGIC merge into silver_services as target
-# MAGIC using transformed_services as source
-# MAGIC on target.service_id = source.service_id
+# MAGIC MERGE INTO silver_services AS target
+# MAGIC USING transformed_services AS source
+# MAGIC ON target.service_id = source.service_id
 # MAGIC 
-# MAGIC when matched then update set
+# MAGIC WHEN MATCHED THEN UPDATE SET
 # MAGIC     target.service_name = source.service_name,
 # MAGIC     target.service_owner_id = source.service_owner_id,
 # MAGIC     target.criticality = source.criticality,
 # MAGIC     target.active_flag = source.active_flag,
+# MAGIC     target.is_deleted = 'N',
 # MAGIC     target.ingestion_ts = source.ingestion_ts,
 # MAGIC     target.load_timestamp = source.load_timestamp
 # MAGIC 
-# MAGIC when not matched then insert *;
+# MAGIC WHEN NOT MATCHED THEN INSERT (
+# MAGIC     service_id,
+# MAGIC     service_name,
+# MAGIC     service_owner_id,
+# MAGIC     criticality,
+# MAGIC     active_flag,
+# MAGIC     is_deleted,
+# MAGIC     ingestion_ts,
+# MAGIC     load_timestamp
+# MAGIC )
+# MAGIC VALUES (
+# MAGIC     source.service_id,
+# MAGIC     source.service_name,
+# MAGIC     source.service_owner_id,
+# MAGIC     source.criticality,
+# MAGIC     source.active_flag,
+# MAGIC     'N',
+# MAGIC     source.ingestion_ts,
+# MAGIC     source.load_timestamp
+# MAGIC );
+# MAGIC 
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC --delete
+# MAGIC MERGE INTO silver_services AS target
+# MAGIC USING (
+# MAGIC     SELECT DISTINCT service_id
+# MAGIC     FROM delta_Services_Stg
+# MAGIC     WHERE `__$operation` = 1
+# MAGIC ) AS source
+# MAGIC ON target.service_id = source.service_id
+# MAGIC 
+# MAGIC WHEN MATCHED THEN
+# MAGIC     UPDATE SET
+# MAGIC         target.is_deleted = 'Y',
+# MAGIC         target.load_timestamp = current_timestamp();
 
 
 # METADATA ********************
@@ -487,29 +421,6 @@ WHERE ingestion_ts > (
 # MARKDOWN ********************
 
 # **<h1>SLA DEFINITIONS</h1>**
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC --create
-# MAGIC create table if not exists silver_sla_definitions (
-# MAGIC     sla_id string,
-# MAGIC 
-# MAGIC     priority string,
-# MAGIC     response_minutes int,
-# MAGIC     resolution_minutes int,
-# MAGIC 
-# MAGIC     load_timestamp timestamp
-# MAGIC )
-# MAGIC using delta;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
 
 # CELL ********************
 
@@ -563,38 +474,9 @@ WHERE ingestion_ts > (
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# CELL ********************
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
 # MARKDOWN ********************
 
 # **<h1>Categories</h1>**
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC create table if not exists silver_categories (
-# MAGIC     category_id string,
-# MAGIC     category_name string,
-# MAGIC     subcategory_name string,
-# MAGIC     load_timestamp timestamp
-# MAGIC )
-# MAGIC using delta;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
 
 # CELL ********************
 
@@ -643,24 +525,6 @@ WHERE ingestion_ts > (
 # CELL ********************
 
 # MAGIC %%sql
-# MAGIC create table if not exists silver_servicecategorymap (
-# MAGIC     service_id string,
-# MAGIC     category_id string,
-# MAGIC     load_timestamp timestamp
-# MAGIC )
-# MAGIC using delta;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# MAGIC %%sql
 # MAGIC create or replace temp view transformed_servicecategorymap as
 # MAGIC select distinct
 # MAGIC     trim(service_id) as service_id,
@@ -697,24 +561,6 @@ WHERE ingestion_ts > (
 # MARKDOWN ********************
 
 # **<h1>SERVICE GROUP MAP</h1>**
-
-# CELL ********************
-
-# MAGIC %%sql
-# MAGIC create table if not exists silver_servicegroupmap (
-# MAGIC     service_id string,
-# MAGIC     group_id string,
-# MAGIC     load_timestamp timestamp
-# MAGIC )
-# MAGIC using delta;
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
 
 # CELL ********************
 
@@ -759,57 +605,6 @@ WHERE ingestion_ts > (
 # CELL ********************
 
 # MAGIC %%sql
-# MAGIC create table if not exists silver_tickets (
-# MAGIC     ticket_id string,
-# MAGIC 
-# MAGIC     ticket_type string,
-# MAGIC 
-# MAGIC     opened_ts timestamp,
-# MAGIC     closed_ts timestamp,
-# MAGIC 
-# MAGIC     ticket_status string,
-# MAGIC 
-# MAGIC     requester_id string,
-# MAGIC     assigned_group_id string,
-# MAGIC     service_id string,
-# MAGIC     category_id string,
-# MAGIC 
-# MAGIC     priority string,
-# MAGIC     impact string,
-# MAGIC     urgency string,
-# MAGIC 
-# MAGIC     sla_id string,
-# MAGIC 
-# MAGIC     location string,
-# MAGIC     short_description string,
-# MAGIC     description string,
-# MAGIC 
-# MAGIC     record_created_ts timestamp,
-# MAGIC     record_updated_ts timestamp,
-# MAGIC 
-# MAGIC     resolution_minutes int,
-# MAGIC     sla_target_minutes int,
-# MAGIC     sla_breach_flag boolean,
-# MAGIC 
-# MAGIC     invalid_date_flag boolean,
-# MAGIC 
-# MAGIC     ingestion_ts timestamp,
-# MAGIC     load_timestamp timestamp
-# MAGIC )
-# MAGIC using delta;
-# MAGIC 
-
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-# MAGIC %%sql
 # MAGIC create or replace temp view incremental_tickets as
 # MAGIC select *
 # MAGIC from bronze_tickets_stg
@@ -830,77 +625,71 @@ WHERE ingestion_ts > (
 # CELL ********************
 
 # MAGIC %%sql
-# MAGIC create or replace temp view transformed_tickets as
-# MAGIC select
+# MAGIC CREATE OR REPLACE TEMP VIEW transformed_tickets AS
+# MAGIC SELECT
 # MAGIC     t.ticket_id,
 # MAGIC 
-# MAGIC     upper(trim(t.ticket_type)) as ticket_type,
+# MAGIC     upper(trim(t.ticket_type)) AS ticket_type,
 # MAGIC 
-# MAGIC     cast(t.opened_date as timestamp) as opened_ts,
-# MAGIC     cast(t.closed_date as timestamp) as closed_ts,
+# MAGIC     CAST(t.opened_date AS TIMESTAMP) AS opened_ts,
+# MAGIC     CAST(t.closed_date AS TIMESTAMP) AS closed_ts,
 # MAGIC 
-# MAGIC     upper(trim(t.ticket_status)) as ticket_status,
+# MAGIC     upper(trim(t.ticket_status)) AS ticket_status,
 # MAGIC 
-# MAGIC     trim(t.requester_id) as requester_id,
-# MAGIC     trim(t.assigned_group_id) as assigned_group_id,
-# MAGIC     trim(t.service_id) as service_id,
-# MAGIC     trim(t.category_id) as category_id,
+# MAGIC     trim(t.requester_id) AS requester_id,
+# MAGIC     trim(t.assigned_group_id) AS assigned_group_id,
+# MAGIC     trim(t.service_id) AS service_id,
+# MAGIC     trim(t.category_id) AS category_id,
 # MAGIC 
-# MAGIC     upper(trim(t.priority)) as priority,
-# MAGIC     upper(trim(t.impact)) as impact,
-# MAGIC     upper(trim(t.urgency)) as urgency,
+# MAGIC     upper(trim(t.priority)) AS priority,
+# MAGIC     upper(trim(t.impact)) AS impact,
+# MAGIC     upper(trim(t.urgency)) AS urgency,
 # MAGIC 
-# MAGIC     trim(t.sla_id) as sla_id,
+# MAGIC     trim(t.sla_id) AS sla_id,
 # MAGIC 
-# MAGIC     initcap(trim(t.location)) as location,
+# MAGIC     initcap(trim(t.location)) AS location,
 # MAGIC 
-# MAGIC     trim(t.short_description) as short_description,
-# MAGIC     trim(t.description) as description,
+# MAGIC     trim(t.short_description) AS short_description,
+# MAGIC     trim(t.description) AS description,
 # MAGIC 
-# MAGIC     cast(t.record_created_at as timestamp) as record_created_ts,
-# MAGIC     cast(t.record_updated_at as timestamp) as record_updated_ts,
+# MAGIC     CAST(t.record_created_at AS TIMESTAMP) AS record_created_ts,
+# MAGIC     CAST(t.record_updated_at AS TIMESTAMP) AS record_updated_ts,
 # MAGIC 
-# MAGIC     -- resolution minutes
-# MAGIC     case
-# MAGIC         when t.opened_date is not null
-# MAGIC          and t.closed_date is not null
-# MAGIC          and cast(t.closed_date as timestamp) >= cast(t.opened_date as timestamp)
-# MAGIC         then
-# MAGIC             (unix_timestamp(t.closed_date) - unix_timestamp(t.opened_date)) / 60
-# MAGIC         else null
-# MAGIC     end as resolution_minutes,
+# MAGIC     CASE
+# MAGIC         WHEN t.opened_date IS NOT NULL
+# MAGIC          AND t.closed_date IS NOT NULL
+# MAGIC          AND CAST(t.closed_date AS TIMESTAMP) >= CAST(t.opened_date AS TIMESTAMP)
+# MAGIC         THEN (unix_timestamp(t.closed_date) - unix_timestamp(t.opened_date)) / 60
+# MAGIC         ELSE NULL
+# MAGIC     END AS resolution_minutes,
 # MAGIC 
-# MAGIC     -- sla target
-# MAGIC     s.resolution_minutes as sla_target_minutes,
+# MAGIC     s.resolution_minutes AS sla_target_minutes,
 # MAGIC 
-# MAGIC     -- sla breach flag
-# MAGIC     case
-# MAGIC         when t.closed_date is null then null
-# MAGIC         when s.resolution_minutes is null then null
-# MAGIC         when (unix_timestamp(t.closed_date) - unix_timestamp(t.opened_date)) / 60
+# MAGIC     CASE
+# MAGIC         WHEN t.closed_date IS NULL THEN NULL
+# MAGIC         WHEN s.resolution_minutes IS NULL THEN NULL
+# MAGIC         WHEN (unix_timestamp(t.closed_date) - unix_timestamp(t.opened_date)) / 60
 # MAGIC              > s.resolution_minutes
-# MAGIC         then true
-# MAGIC         else false
-# MAGIC     end as sla_breach_flag,
+# MAGIC         THEN TRUE
+# MAGIC         ELSE FALSE
+# MAGIC     END AS sla_breach_flag,
 # MAGIC 
-# MAGIC     -- invalid date flag
-# MAGIC     case
-# MAGIC         when t.opened_date is null then true
-# MAGIC         when t.closed_date is not null
-# MAGIC              and cast(t.closed_date as timestamp)
-# MAGIC                  < cast(t.opened_date as timestamp)
-# MAGIC         then true
-# MAGIC         else false
-# MAGIC     end as invalid_date_flag,
+# MAGIC     CASE
+# MAGIC         WHEN t.opened_date IS NULL THEN TRUE
+# MAGIC         WHEN t.closed_date IS NOT NULL
+# MAGIC              AND CAST(t.closed_date AS TIMESTAMP)
+# MAGIC                  < CAST(t.opened_date AS TIMESTAMP)
+# MAGIC         THEN TRUE
+# MAGIC         ELSE FALSE
+# MAGIC     END AS invalid_date_flag,
 # MAGIC 
 # MAGIC     t.ingestion_ts,
-# MAGIC     current_timestamp() as load_timestamp
+# MAGIC     current_timestamp() AS load_timestamp
 # MAGIC 
-# MAGIC from incremental_tickets t
-# MAGIC left join silver_sla_definitions s
-# MAGIC     on upper(trim(t.priority)) = s.priority
-# MAGIC where t.ticket_id is not null;
-# MAGIC 
+# MAGIC FROM incremental_tickets t
+# MAGIC LEFT JOIN silver_sla_definitions s
+# MAGIC     ON upper(trim(t.priority)) = s.priority
+# MAGIC WHERE t.ticket_id IS NOT NULL;
 
 
 # METADATA ********************
@@ -913,11 +702,11 @@ WHERE ingestion_ts > (
 # CELL ********************
 
 # MAGIC %%sql
-# MAGIC merge into silver_tickets as target
-# MAGIC using transformed_tickets as source
-# MAGIC on target.ticket_id = source.ticket_id
+# MAGIC MERGE INTO silver_tickets AS target
+# MAGIC USING transformed_tickets AS source
+# MAGIC ON target.ticket_id = source.ticket_id
 # MAGIC 
-# MAGIC when matched then update set
+# MAGIC WHEN MATCHED THEN UPDATE SET
 # MAGIC     target.ticket_type = source.ticket_type,
 # MAGIC     target.opened_ts = source.opened_ts,
 # MAGIC     target.closed_ts = source.closed_ts,
@@ -939,10 +728,89 @@ WHERE ingestion_ts > (
 # MAGIC     target.sla_target_minutes = source.sla_target_minutes,
 # MAGIC     target.sla_breach_flag = source.sla_breach_flag,
 # MAGIC     target.invalid_date_flag = source.invalid_date_flag,
+# MAGIC     target.is_deleted = 'N',
 # MAGIC     target.ingestion_ts = source.ingestion_ts,
 # MAGIC     target.load_timestamp = source.load_timestamp
 # MAGIC 
-# MAGIC when not matched then insert *;
+# MAGIC WHEN NOT MATCHED THEN INSERT (
+# MAGIC     ticket_id,
+# MAGIC     ticket_type,
+# MAGIC     opened_ts,
+# MAGIC     closed_ts,
+# MAGIC     ticket_status,
+# MAGIC     requester_id,
+# MAGIC     assigned_group_id,
+# MAGIC     service_id,
+# MAGIC     category_id,
+# MAGIC     priority,
+# MAGIC     impact,
+# MAGIC     urgency,
+# MAGIC     sla_id,
+# MAGIC     location,
+# MAGIC     short_description,
+# MAGIC     description,
+# MAGIC     record_created_ts,
+# MAGIC     record_updated_ts,
+# MAGIC     resolution_minutes,
+# MAGIC     sla_target_minutes,
+# MAGIC     sla_breach_flag,
+# MAGIC     invalid_date_flag,
+# MAGIC     is_deleted,
+# MAGIC     ingestion_ts,
+# MAGIC     load_timestamp
+# MAGIC )
+# MAGIC VALUES (
+# MAGIC     source.ticket_id,
+# MAGIC     source.ticket_type,
+# MAGIC     source.opened_ts,
+# MAGIC     source.closed_ts,
+# MAGIC     source.ticket_status,
+# MAGIC     source.requester_id,
+# MAGIC     source.assigned_group_id,
+# MAGIC     source.service_id,
+# MAGIC     source.category_id,
+# MAGIC     source.priority,
+# MAGIC     source.impact,
+# MAGIC     source.urgency,
+# MAGIC     source.sla_id,
+# MAGIC     source.location,
+# MAGIC     source.short_description,
+# MAGIC     source.description,
+# MAGIC     source.record_created_ts,
+# MAGIC     source.record_updated_ts,
+# MAGIC     source.resolution_minutes,
+# MAGIC     source.sla_target_minutes,
+# MAGIC     source.sla_breach_flag,
+# MAGIC     source.invalid_date_flag,
+# MAGIC     'N',
+# MAGIC     source.ingestion_ts,
+# MAGIC     source.load_timestamp
+# MAGIC );
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC --delete merge
+# MAGIC MERGE INTO silver_tickets AS target
+# MAGIC USING (
+# MAGIC     SELECT DISTINCT ticket_id
+# MAGIC     FROM staging_Tickets_Stg
+# MAGIC     WHERE `__$operation` = 1
+# MAGIC ) AS source
+# MAGIC ON target.ticket_id = source.ticket_id
+# MAGIC 
+# MAGIC WHEN MATCHED THEN
+# MAGIC     UPDATE SET
+# MAGIC         target.is_deleted = 'Y',
+# MAGIC         target.load_timestamp = current_timestamp();
 
 
 # METADATA ********************
@@ -963,5 +831,90 @@ WHERE ingestion_ts > (
 
 # META {
 # META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC --incremental extraction
+# MAGIC create or replace temp view incremental_worklogs as
+# MAGIC select *
+# MAGIC from bronze_ticketworklogs_stg
+# MAGIC where ingestion_ts > (
+# MAGIC     select coalesce(max(ingestion_ts), timestamp('1900-01-01'))
+# MAGIC     from silver_ticket_worklogs
+# MAGIC );
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC --transformation
+# MAGIC create or replace temp view transformed_worklogs as
+# MAGIC select
+# MAGIC     worklog_id,
+# MAGIC 
+# MAGIC     trim(ticket_id) as ticket_id,
+# MAGIC 
+# MAGIC     trim(updated_by) as updated_by,
+# MAGIC 
+# MAGIC     upper(trim(update_type)) as update_type,
+# MAGIC 
+# MAGIC     cast(update_timestamp as timestamp) as update_ts,
+# MAGIC 
+# MAGIC     trim(worklog_comment) as worklog_comment,
+# MAGIC 
+# MAGIC     case
+# MAGIC         when update_timestamp is null then true
+# MAGIC         else false
+# MAGIC     end as invalid_timestamp_flag,
+# MAGIC 
+# MAGIC     ingestion_ts,
+# MAGIC     current_timestamp() as load_timestamp
+# MAGIC 
+# MAGIC from incremental_worklogs
+# MAGIC where worklog_id is not null
+# MAGIC   and ticket_id is not null;
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC merge into silver_ticket_worklogs as target
+# MAGIC using transformed_worklogs as source
+# MAGIC on target.worklog_id = source.worklog_id
+# MAGIC 
+# MAGIC when matched then update set
+# MAGIC     target.ticket_id = source.ticket_id,
+# MAGIC     target.updated_by = source.updated_by,
+# MAGIC     target.update_type = source.update_type,
+# MAGIC     target.update_ts = source.update_ts,
+# MAGIC     target.worklog_comment = source.worklog_comment,
+# MAGIC     target.invalid_timestamp_flag = source.invalid_timestamp_flag,
+# MAGIC     target.ingestion_ts = source.ingestion_ts,
+# MAGIC     target.load_timestamp = source.load_timestamp
+# MAGIC 
+# MAGIC when not matched then insert *;
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
 # META   "language_group": "synapse_pyspark"
 # META }
