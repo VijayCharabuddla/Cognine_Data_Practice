@@ -1,0 +1,104 @@
+{
+  "schema_version": 70,
+  "tiles": [
+    {
+      "id": "881b587b-38e4-4e8e-9b64-fe04fc336544",
+      "title": "New Tile",
+      "visualType": "table",
+      "pageId": "0d61491c-8c14-4cb3-baac-365cf5430210",
+      "layout": {
+        "width": 9,
+        "height": 7,
+        "x": 0,
+        "y": 0
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "beb07042-3790-432a-a819-63dd855bbefb"
+      },
+      "visualOptions": {
+        "selectedDataOnLoad": {
+          "all": true,
+          "limit": 10
+        }
+      }
+    },
+    {
+      "id": "893eee35-818c-4fa8-b35b-18883b3a708d",
+      "title": "New Tile",
+      "visualType": "table",
+      "pageId": "0d61491c-8c14-4cb3-baac-365cf5430210",
+      "layout": {
+        "width": 9,
+        "height": 7,
+        "x": 9,
+        "y": 0
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "85babcb1-d4f5-47af-b03f-ffbfceeedc44"
+      },
+      "visualOptions": {
+        "selectedDataOnLoad": {
+          "all": true,
+          "limit": 10
+        }
+      }
+    }
+  ],
+  "baseQueries": [],
+  "parameters": [
+    {
+      "kind": "duration",
+      "id": "ef15a901-0cf3-4701-bdf4-aded283aa4ef",
+      "displayName": "Time range",
+      "description": "",
+      "beginVariableName": "_startTime",
+      "endVariableName": "_endTime",
+      "defaultValue": {
+        "kind": "dynamic",
+        "count": 1,
+        "unit": "hours"
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
+    }
+  ],
+  "dataSources": [
+    {
+      "id": "a3f24151-7010-45d6-80fe-a14a3b0ed01e",
+      "kind": "kusto-trident",
+      "name": "weather_streaming_data",
+      "clusterUri": "",
+      "database": "b743e2f8-a365-804e-4e15-ab6812df0d84",
+      "workspace": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "pages": [
+    {
+      "name": "Page 1",
+      "id": "0d61491c-8c14-4cb3-baac-365cf5430210"
+    }
+  ],
+  "queries": [
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a3f24151-7010-45d6-80fe-a14a3b0ed01e"
+      },
+      "text": "silver_environment_clean\r\n| summarize arg_max(event_time, *) by city",
+      "id": "beb07042-3790-432a-a819-63dd855bbefb",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a3f24151-7010-45d6-80fe-a14a3b0ed01e"
+      },
+      "text": "silver_environment_clean\r\n| summarize arg_max(event_time, *) by city\r\n",
+      "id": "85babcb1-d4f5-47af-b03f-ffbfceeedc44",
+      "usedVariables": []
+    }
+  ]
+}

@@ -151,6 +151,143 @@
           }
         }
       ]
+    },
+    {
+      "id": "83ef0892-08cc-4651-8e80-9c412d5718a8",
+      "name": "Activator",
+      "type": "Activator",
+      "properties": {
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemId": "a7d04e84-a62a-a701-43e2-1b3185a53b63",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "Filter"
+        }
+      ],
+      "inputSchemas": [
+        {
+          "name": "Filter",
+          "schema": {
+            "columns": [
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "country",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lat",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lon",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "localtime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "temp_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "humidity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "wind_kph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "uv",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "condition_text",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "pm2_5",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "pm10",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "co",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "no2",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "o3",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "so2",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "us_epa_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ingestion_time_utc",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "streams": [
@@ -167,6 +304,150 @@
     }
   ],
   "operators": [
+    {
+      "name": "Filter",
+      "type": "Filter",
+      "inputNodes": [
+        {
+          "name": "weather-realtime-stream-stream"
+        }
+      ],
+      "properties": {
+        "conditions": [
+          {
+            "column": {
+              "expressionType": "ColumnReference",
+              "node": null,
+              "columnName": "temp_c",
+              "columnPathSegments": []
+            },
+            "operatorType": "GreaterThan",
+            "value": {
+              "expressionType": "Literal",
+              "dataType": "Float",
+              "value": "30"
+            }
+          }
+        ]
+      },
+      "inputSchemas": [
+        {
+          "name": "weather-realtime-stream-stream",
+          "schema": {
+            "columns": [
+              {
+                "name": "city",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "country",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lat",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "lon",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "localtime",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "temp_c",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "humidity",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "wind_kph",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "uv",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "condition_text",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "pm2_5",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "pm10",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "co",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "no2",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "o3",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "so2",
+                "type": "Float",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "us_epa_index",
+                "type": "BigInt",
+                "fields": null,
+                "items": null
+              },
+              {
+                "name": "ingestion_time_utc",
+                "type": "Nvarchar(max)",
+                "fields": null,
+                "items": null
+              }
+            ]
+          }
+        }
+      ]
+    },
     {
       "name": "ManageFields",
       "type": "ManageFields",

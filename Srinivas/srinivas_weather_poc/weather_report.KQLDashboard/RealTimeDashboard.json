@@ -12,10 +12,10 @@
       "visualType": "column",
       "pageId": "c41ba099-2f09-47a9-9f94-7a0520a93138",
       "layout": {
-        "x": 8,
+        "x": 13,
         "y": 0,
         "width": 11,
-        "height": 8
+        "height": 9
       },
       "queryRef": {
         "kind": "query",
@@ -46,10 +46,109 @@
         "seriesColumns": null,
         "xAxisScale": "linear",
         "verticalLine": "",
-        "crossFilter": [],
         "crossFilterDisabled": false,
         "drillthroughDisabled": false,
         "forceAxisTicks": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "selectedDataOnLoad": {
+          "all": true,
+          "limit": 10
+        }
+      }
+    },
+    {
+      "id": "a58338cd-cc94-4ada-92c8-5e10d74a8ad3",
+      "title": "temp changes on a day",
+      "visualType": "line",
+      "pageId": "c41ba099-2f09-47a9-9f94-7a0520a93138",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 10,
+        "height": 9
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "8eea8309-a4af-45ac-ad8b-0cfd59d2a756"
+      },
+      "hideTitle": true,
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [],
+        "drillthrough": [],
+        "selectedDataOnLoad": {
+          "all": true,
+          "limit": 10
+        }
+      }
+    },
+    {
+      "id": "02a6bbc6-f452-4a3a-b541-8535439f6027",
+      "title": "day wise temp",
+      "visualType": "line",
+      "pageId": "c41ba099-2f09-47a9-9f94-7a0520a93138",
+      "layout": {
+        "x": 0,
+        "y": 9,
+        "width": 9,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "537e13b9-18d5-4635-aa7e-225e4e61a478"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [],
         "drillthrough": [],
         "selectedDataOnLoad": {
           "all": true,
@@ -102,6 +201,24 @@
       },
       "text": "silver_environment_clean\r\n| summarize arg_max(event_time, *) by city\r\n| project city, temp_c\r\n| order by temp_c desc\r\n",
       "id": "26cd3611-8652-48d6-a82b-201fc52092da",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "ebd5dd40-0376-4884-8c16-66ffc694cc05"
+      },
+      "text": "silver_environment_clean\n| where event_time > ago(6h)\n| summarize avg_temp = round(avg(temp_c),0) by city, bin(event_time, 1hr)\n| order by event_time asc",
+      "id": "8eea8309-a4af-45ac-ad8b-0cfd59d2a756",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "ebd5dd40-0376-4884-8c16-66ffc694cc05"
+      },
+      "text": "silver_environment_clean\n| summarize day_avg = round(avg(temp_c),0)\n    by city, bin(event_time, 1d)\n| order by city, event_time",
+      "id": "537e13b9-18d5-4635-aa7e-225e4e61a478",
       "usedVariables": []
     }
   ]
