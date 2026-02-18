@@ -150,6 +150,7 @@
 # MAGIC WHEN MATCHED THEN
 # MAGIC     UPDATE SET
 # MAGIC         target.is_deleted = 'Y',
+# MAGIC         target.active_flag = 'N',
 # MAGIC         target.load_timestamp = current_timestamp();
 # MAGIC 
 
@@ -269,6 +270,7 @@
 # MAGIC WHEN MATCHED THEN
 # MAGIC     UPDATE SET
 # MAGIC         target.is_deleted = 'Y',
+# MAGIC         target.active_flag = 'N',
 # MAGIC         target.load_timestamp = current_timestamp();
 
 
@@ -408,6 +410,7 @@
 # MAGIC WHEN MATCHED THEN
 # MAGIC     UPDATE SET
 # MAGIC         target.is_deleted = 'Y',
+# MAGIC         target.active_flag = 'N',
 # MAGIC         target.load_timestamp = current_timestamp();
 
 
@@ -810,6 +813,7 @@
 # MAGIC WHEN MATCHED THEN
 # MAGIC     UPDATE SET
 # MAGIC         target.is_deleted = 'Y',
+# MAGIC         target.active_flag = 'N',
 # MAGIC         target.load_timestamp = current_timestamp();
 
 
