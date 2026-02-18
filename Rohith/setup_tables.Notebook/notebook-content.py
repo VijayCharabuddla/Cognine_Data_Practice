@@ -270,8 +270,8 @@ spark.sql("""
         product_id STRING,
         product_name STRING,
         category_id STRING,
-        unit_cost DOUBLE,
-        unit_price DOUBLE,
+        unit_cost DECIMAL(10,2),
+        unit_price DECIMAL(10,2),
         status STRING,
         row_hash STRING,
         silver_ingestion_timestamp TIMESTAMP
@@ -333,7 +333,7 @@ spark.sql("""
         order_id STRING,
         product_id STRING,
         quantity INTEGER,
-        unit_price DOUBLE,
+        unit_price DECIMAL(10,2),
         row_hash STRING,
         silver_ingestion_timestamp TIMESTAMP
     ) USING DELTA
