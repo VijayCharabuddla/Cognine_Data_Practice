@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Reflex",
+    "displayName": "temp_rise_activator"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a7d04e84-a62a-a701-43e2-1b3185a53b63"
+  }
+}

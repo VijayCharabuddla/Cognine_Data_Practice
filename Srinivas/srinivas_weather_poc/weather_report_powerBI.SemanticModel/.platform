@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "weather_report_powerBI"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "2fed9ad9-c1e1-b1bb-4caf-f4b83523b13c"
+  }
+}

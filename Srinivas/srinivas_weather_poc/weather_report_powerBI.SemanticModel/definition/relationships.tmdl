@@ -1,0 +1,15 @@
+relationship c986bce5-5671-4f38-a32e-46271636a227
+	joinOnDateBehavior: datePartOnly
+	fromColumn: silver_environment_clean.event_time
+	toColumn: LocalDateTable_59d74c8f-cd68-4ad5-aa25-a0a39b40aadc.Date
+
+relationship 855346c3-a446-40d8-a0cc-691d676d3a82
+	joinOnDateBehavior: datePartOnly
+	fromColumn: silver_environment_clean.event_date
+	toColumn: LocalDateTable_3dfbab0b-65ba-4e59-9db2-4505e19aab51.Date
+
+relationship 1d49e191-1e4f-49c9-9304-13fc9fc0931e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: silver_environment_clean.ingestion_time
+	toColumn: LocalDateTable_c199e249-4722-4191-a4c9-50cc491c0eb3.Date
+

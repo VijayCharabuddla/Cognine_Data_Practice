@@ -1,0 +1,43 @@
+table 'Kusto Query Result'
+	lineageTag: 62c22776-3270-4c5a-a767-3bb5675f79bf
+
+	column city
+		dataType: string
+		lineageTag: 5148d9ba-f054-414a-ae36-f0f6796d42da
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_time
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 0c0c934a-cd55-44d0-8786-9c67b6a70147
+		summarizeBy: none
+		sourceColumn: event_time
+
+		annotation SummarizationSetBy = Automatic
+
+	column day_avg
+		dataType: double
+		lineageTag: 5e8b2bf7-b1c7-4eae-bd5b-cbed67032821
+		summarizeBy: sum
+		sourceColumn: day_avg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'Kusto Query Result' = m
+		mode: directQuery
+		source =
+				let
+				Source = AzureDataExplorer.Contents("https://trd-1ndhfr5utev0h9c43p.z6.kusto.fabric.microsoft.com", "12df0d84-ab68-4e15-804e-a365b743e2f8", "silver_environment_clean
+				| summarize day_avg = avg(temp_c)
+				    by city, bin(event_time, 1d)
+				| order by city, event_time", [])
+				in
+				Source
+
+	annotation PBI_ResultType = Table
+

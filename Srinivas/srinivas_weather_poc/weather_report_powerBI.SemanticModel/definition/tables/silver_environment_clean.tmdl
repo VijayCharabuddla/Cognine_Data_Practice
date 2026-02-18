@@ -1,0 +1,435 @@
+table silver_environment_clean
+	lineageTag: 3aed407d-cec4-4870-9ceb-2d0c2efb1e42
+
+	measure 'Latest UV Index' = ```
+			
+			VAR LatestTime =
+			    CALCULATE(
+			        MAX(silver_environment_clean[event_time])
+			    )
+			RETURN
+			CALCULATE(
+			    MAX(silver_environment_clean[uv_index]),
+			    FILTER(
+			        silver_environment_clean,
+			        silver_environment_clean[event_time] = LatestTime
+			    )
+			)
+			
+			```
+		lineageTag: ee2762e1-d58b-47b3-a727-395383e4e376
+
+		changedProperty = IsHidden
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest Wind KPH' = ```
+			
+			VAR LatestTime =
+			    CALCULATE(
+			        MAX(silver_environment_clean[event_time])
+			    )
+			RETURN
+			CALCULATE(
+			    MAX(silver_environment_clean[wind_kph]),
+			    FILTER(
+			        silver_environment_clean,
+			        silver_environment_clean[event_time] = LatestTime
+			    )
+			)
+			
+			```
+		lineageTag: 7aebabaa-49d7-4eb6-bde0-bfdf25bbfc55
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest Humidity' = ```
+			
+			VAR LatestTime =
+			    MAX ( silver_environment_clean[event_time] )
+			RETURN
+			CALCULATE (
+			    MAX ( silver_environment_clean[humidity_percent] ),
+			   silver_environment_clean[event_time] = LatestTime
+			)
+			
+			```
+		formatString: 0
+		lineageTag: ee3a8f98-3a8a-4df8-a42d-3bc8e08d23eb
+
+	measure 'Latest AQI' = ```
+			
+			VAR LatestTime =
+			    CALCULATE(
+			        MAX(silver_environment_clean[event_time])
+			    )
+			RETURN
+			CALCULATE (
+			    MAX (silver_environment_clean[aqi_index] ),
+			    silver_environment_clean[event_time] =  LatestTime
+			)
+			
+			```
+		formatString: 0
+		lineageTag: 06ec0192-b4a7-4997-8427-4da6f5971e55
+
+	measure 'Latest Temp' = ```
+			
+			VAR LatestTime =
+			    MAX ( silver_environment_clean[event_time] )
+			RETURN
+			CALCULATE (
+			    MAX ( silver_environment_clean[temp_c] ),
+			    silver_environment_clean[event_time] = LatestTime
+			)
+			
+			```
+		lineageTag: 45d01345-1db5-4204-a3bd-8b2ceaf63011
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest PM2_5' = ```
+			
+			VAR LatestTime =
+			    CALCULATE(
+			        MAX(silver_environment_clean[event_time])
+			    )
+			RETURN
+			CALCULATE (
+			    MAX ( silver_environment_clean[pm2_5] ),
+			    silver_environment_clean[event_time] = LatestTime
+			)
+			
+			```
+		lineageTag: bb839f22-f58c-4068-b730-09cbd413f549
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest PM10' = ```
+			
+			 var LatestTime=
+			MAX(silver_environment_clean[event_time])
+			return
+			CALCULATE (
+			    MAX ( silver_environment_clean[pm10] ),
+			    silver_environment_clean[event_time] = LatestTime
+			)
+			
+			```
+		lineageTag: ff729694-96d4-4b05-b0c6-b239131ab989
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest NO2' = ```
+			
+			var LatestTime=MAX(silver_environment_clean[event_time])
+			RETURN
+			CALCULATE (
+			    MAX ( silver_environment_clean[no2] ),
+			    silver_environment_clean[event_time] =LatestTime
+			)
+			
+			```
+		lineageTag: 9c94d371-115b-4ad9-9068-f18bbe1aee6c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest CO' = ```
+			
+			var LatestTime=MAX(silver_environment_clean[event_time])
+			RETURN
+			CALCULATE (
+			    MAX ( silver_environment_clean[co] ),
+			    silver_environment_clean[event_time] = LatestTime
+			)
+			
+			```
+		lineageTag: 2ae2fff1-879a-4dff-a00f-4c6764e455ce
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest O3' = ```
+			
+			var LatestTime=MAX(silver_environment_clean[event_time])
+			RETURN
+			CALCULATE (
+			    MAX ( silver_environment_clean[o3] ),
+			    silver_environment_clean[event_time] = LatestTime
+			)
+			
+			```
+		lineageTag: ef17af6a-ebaf-40f7-8150-358e338eb001
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Latest AQI Band' = ```
+			
+			VAR LatestTime =
+			    MAX(silver_environment_clean[event_time])
+			RETURN
+			CALCULATE (
+			    SELECTEDVALUE ( silver_environment_clean[aqi_band] ),
+			    FILTER (
+			        silver_environment_clean,
+			        silver_environment_clean[event_time] = LatestTime
+			    )
+			)
+			
+			```
+		lineageTag: ee01951b-6b27-4d54-a8ee-c077a667c9de
+
+	measure 'Daily Avg Temperature' = ```
+			
+			AVERAGE(silver_environment_clean[temp_c])
+			
+			```
+		lineageTag: 7f74bb5f-ae27-4d93-bbda-ea9f374f5984
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'AQI Color' = ```
+			
+			SWITCH(
+			    TRUE(),
+			    [Latest AQI] <= 2, "#2ECC71",        -- Green (Good)
+			    [Latest AQI] <= 3, "#F1C40F",       -- Yellow (Moderate)
+			    [Latest AQI] <= 5, "#E67E22",       -- Orange
+			    [Latest AQI] <= 6, "#E74C3C"       -- Red  
+			)
+			
+			```
+		lineageTag: f6b86e59-8a08-4a33-a612-2bc6ae10124f
+
+	measure 'AQI Remaining' =
+			
+			6 - silver_environment_clean[Latest AQI]
+		formatString: 0
+		lineageTag: beca8c96-33cb-4e32-abf4-1c5b58a568ea
+
+	column city
+		dataType: string
+		lineageTag: 4d4da2df-16e3-432a-adb4-952c60415f6a
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column country
+		dataType: string
+		lineageTag: c8f28a6d-1ea5-4a3f-8513-15d0d79da3e7
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column latitude
+		dataType: double
+		lineageTag: 3cf24820-e432-4b71-985b-d83b83bb6b48
+		summarizeBy: sum
+		sourceColumn: latitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column longitude
+		dataType: double
+		lineageTag: 36bec6a5-476d-4e57-a918-89069b5afc34
+		summarizeBy: sum
+		sourceColumn: longitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column event_time
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 422f78a0-2908-4b05-9a15-22eb28779a8f
+		summarizeBy: none
+		sourceColumn: event_time
+
+		variation Variation
+			isDefault
+			relationship: c986bce5-5671-4f38-a32e-46271636a227
+			defaultHierarchy: LocalDateTable_59d74c8f-cd68-4ad5-aa25-a0a39b40aadc.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ab109683-e801-47b0-8f68-0bccf7386cc1
+		summarizeBy: none
+		sourceColumn: event_date
+
+		variation Variation
+			isDefault
+			relationship: 855346c3-a446-40d8-a0cc-691d676d3a82
+			defaultHierarchy: LocalDateTable_3dfbab0b-65ba-4e59-9db2-4505e19aab51.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_hour
+		dataType: int64
+		formatString: 0
+		lineageTag: bb5a73cf-1a9c-42f0-a69d-75be897fb1dc
+		summarizeBy: sum
+		sourceColumn: event_hour
+
+		annotation SummarizationSetBy = Automatic
+
+	column temp_c
+		dataType: double
+		lineageTag: 7af93081-862c-4d04-9f06-9529bf1613bd
+		summarizeBy: sum
+		sourceColumn: temp_c
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column humidity_percent
+		dataType: int64
+		formatString: 0
+		lineageTag: 3645e4f5-034d-4c79-8236-b89b0648e7b2
+		summarizeBy: sum
+		sourceColumn: humidity_percent
+
+		annotation SummarizationSetBy = Automatic
+
+	column wind_kph
+		dataType: double
+		lineageTag: 7cb7075c-8987-40c6-ac5e-4dd881c47989
+		summarizeBy: sum
+		sourceColumn: wind_kph
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column uv_index
+		dataType: double
+		lineageTag: 9a0aa92d-e30c-41a7-8f7b-89e6e096a241
+		summarizeBy: sum
+		sourceColumn: uv_index
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column uv_band
+		dataType: string
+		lineageTag: 6eb3bd76-6112-4103-88ec-4af834eb70dc
+		summarizeBy: none
+		sourceColumn: uv_band
+
+		annotation SummarizationSetBy = Automatic
+
+	column pm2_5
+		dataType: double
+		lineageTag: 84c7a81c-78a1-49e9-bfa8-8300cae0686b
+		summarizeBy: sum
+		sourceColumn: pm2_5
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column pm10
+		dataType: double
+		lineageTag: 5a342743-f302-4b88-b084-8d7fde872fb2
+		summarizeBy: sum
+		sourceColumn: pm10
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column co
+		dataType: double
+		lineageTag: 8db26317-c2b2-4e10-b743-2ab20c68611f
+		summarizeBy: sum
+		sourceColumn: co
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column no2
+		dataType: double
+		lineageTag: e9bed256-7ae7-47bb-a383-317f066243dd
+		summarizeBy: sum
+		sourceColumn: no2
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column o3
+		dataType: double
+		lineageTag: e6347168-6fa0-4e45-98c9-fdde1cb4feda
+		summarizeBy: sum
+		sourceColumn: o3
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column aqi_index
+		dataType: int64
+		formatString: 0
+		lineageTag: 41d30b19-6938-4677-a796-fe272468bb61
+		summarizeBy: sum
+		sourceColumn: aqi_index
+
+		annotation SummarizationSetBy = Automatic
+
+	column aqi_band
+		dataType: string
+		lineageTag: 48b8ccdb-dabf-4972-885d-0125fbc2fa1a
+		summarizeBy: none
+		sourceColumn: aqi_band
+
+		annotation SummarizationSetBy = Automatic
+
+	column heat_wave_level
+		dataType: string
+		lineageTag: 87a1950a-67b7-4b33-a5ed-35c2ecd3df3c
+		summarizeBy: none
+		sourceColumn: heat_wave_level
+
+		annotation SummarizationSetBy = Automatic
+
+	column environmental_alert
+		dataType: string
+		lineageTag: 7560ca21-901b-43f8-8f9e-fe5834997715
+		summarizeBy: none
+		sourceColumn: environmental_alert
+
+		annotation SummarizationSetBy = Automatic
+
+	column ingestion_time
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 3dac805c-409e-4bc9-940c-e62a434f0080
+		summarizeBy: none
+		sourceColumn: ingestion_time
+
+		variation Variation
+			isDefault
+			relationship: 1d49e191-1e4f-49c9-9304-13fc9fc0931e
+			defaultHierarchy: LocalDateTable_c199e249-4722-4191-a4c9-50cc491c0eb3.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition silver_environment_clean = m
+		mode: import
+		source =
+				let
+				  Source = AzureDataExplorer.KqlDatabase("https://trd-1ndhfr5utev0h9c43p.z6.kusto.fabric.microsoft.com", null, null, null),
+				  #"Navigation 1" = Source{[Name = "12df0d84-ab68-4e15-804e-a365b743e2f8"]}[Data],
+				  #"Navigation 2" = #"Navigation 1"{[Name = "silver_environment_clean"]}[Data]
+				in
+				  #"Navigation 2"
+
