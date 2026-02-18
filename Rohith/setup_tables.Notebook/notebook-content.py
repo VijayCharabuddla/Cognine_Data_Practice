@@ -216,3 +216,152 @@ USING DELTA
 # META   "frozen": false,
 # META   "editable": true
 # META }
+
+# CELL ********************
+
+spark.sql("""
+    CREATE TABLE IF NOT EXISTS customers_silver (
+        customer_id STRING,
+        first_name STRING,
+        last_name STRING,
+        segment STRING,
+        email STRING,
+        phone STRING,
+        created_date DATE,
+        row_hash STRING,
+        silver_ingestion_timestamp TIMESTAMP
+    ) USING DELTA
+""")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+spark.sql("""
+    CREATE TABLE IF NOT EXISTS customer_addresses_silver (
+        address_id STRING,
+        customer_id STRING,
+        street STRING,
+        city STRING,
+        state STRING,
+        country STRING,
+        pincode INTEGER,
+        row_hash STRING,
+        silver_ingestion_timestamp TIMESTAMP
+    ) USING DELTA
+""")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+spark.sql("""
+    CREATE TABLE IF NOT EXISTS products_silver (
+        product_id STRING,
+        product_name STRING,
+        category_id STRING,
+        unit_cost DOUBLE,
+        unit_price DOUBLE,
+        status STRING,
+        row_hash STRING,
+        silver_ingestion_timestamp TIMESTAMP
+    ) USING DELTA
+""")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+spark.sql("""
+    CREATE TABLE IF NOT EXISTS product_categories_silver (
+        category_id STRING,
+        category_name STRING,
+        category_group STRING,
+        row_hash STRING,
+        silver_ingestion_timestamp TIMESTAMP
+    ) USING DELTA
+""")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+spark.sql("""
+    CREATE TABLE IF NOT EXISTS orders_headers_silver (
+        order_id STRING,
+        customer_id STRING,
+        channel_id STRING,
+        order_date DATE,
+        order_status STRING,
+        row_hash STRING,
+        silver_ingestion_timestamp TIMESTAMP
+    ) USING DELTA
+""")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+spark.sql("""
+    CREATE TABLE IF NOT EXISTS line_items_silver (
+        line_id STRING,
+        order_id STRING,
+        product_id STRING,
+        quantity INTEGER,
+        unit_price DOUBLE,
+        row_hash STRING,
+        silver_ingestion_timestamp TIMESTAMP
+    ) USING DELTA
+""")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+spark.sql("""
+    CREATE TABLE IF NOT EXISTS channels_silver (
+        channel_id STRING,
+        channel_name STRING,
+        channel_type STRING,
+        region STRING,
+        row_hash STRING,
+        silver_ingestion_timestamp TIMESTAMP
+    ) USING DELTA
+""")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
