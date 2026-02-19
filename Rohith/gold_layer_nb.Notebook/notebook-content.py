@@ -95,40 +95,27 @@ customers = spark.table("customers_silver") \
 # Window to order versions per customer
 window_spec = Window.partitionBy("customer_id").orderBy("silver_ingestion_timestamp")
 
-# Build SCD Type 2 structure
+# Build SCD Type 2 structure - use created_date for effective dates
 customers_scd = customers \
     .withColumn("version_number", F.row_number().over(window_spec)) \
-    .withColumn("next_timestamp", F.lead("silver_ingestion_timestamp").over(window_spec)) \
-    .withColumn("effective_start_date", 
-                F.when(F.col("version_number") == 1, F.col("created_date").cast("timestamp"))
-                 .otherwise(F.col("silver_ingestion_timestamp"))) \
-    .withColumn("effective_end_date", F.col("next_timestamp")) \
-    .withColumn("is_current", F.when(F.col("next_timestamp").isNull(), True).otherwise(False))
+    .withColumn("next_created_date", F.lead("created_date").over(window_spec)) \
+    .withColumn("effective_start_date", F.col("created_date").cast("timestamp")) \
+    .withColumn("effective_end_date", F.col("next_created_date").cast("timestamp")) \
+    .withColumn("is_current", F.when(F.col("next_created_date").isNull(), True).otherwise(False))
 
-# To compare with existing records, we need row_hash from Silver for records already in Gold
-existing_gold_customers = spark.table("dim_customer").select("customer_id", "effective_start_date")
+# Find versions not yet in Gold
+existing_versions = spark.table("dim_customer").select("customer_id", "effective_start_date")
 
-# Join existing gold records back to Silver to get their row_hash
-existing_with_hash = existing_gold_customers.join(
-    spark.table("customers_silver").select("customer_id", "row_hash", 
-                                           F.col("silver_ingestion_timestamp").alias("silver_ts")),
-    on="customer_id"
-).withColumn("eff_start_match",
-             F.when(F.col("effective_start_date") == F.col("silver_ts"), True)
-              .when(F.col("effective_start_date") == F.col("silver_ts").cast("date").cast("timestamp"), True)
-              .otherwise(False)
-).filter(F.col("eff_start_match") == True) \
- .select("customer_id", "effective_start_date", "row_hash")
-
-# Find new versions
 new_versions = customers_scd.join(
-    existing_with_hash,
-    on=["customer_id", "effective_start_date", "row_hash"],
+    existing_versions,
+    on=["customer_id", "effective_start_date"],
     how="left_anti"
 )
 
-# Generate surrogate keys for new versions
-if new_versions.count() > 0:
+# Count before any other operations
+new_count = new_versions.count()
+
+if new_count > 0:
     max_key_row = spark.sql("SELECT COALESCE(MAX(customer_key), 0) as max_key FROM dim_customer").first()
     max_key = max_key_row.max_key
     
@@ -138,11 +125,173 @@ if new_versions.count() > 0:
         .select("customer_key", "customer_id", "first_name", "last_name", "segment", "email", 
                 "phone", "created_date", "effective_start_date", "effective_end_date", "is_current")
     
-    # Append new versions (row_hash is excluded here)
+    # Append new versions
     new_versions_with_key.write.format("delta").mode("append").saveAsTable("dim_customer")
-    print(f"dim_customer: Inserted {new_versions_with_key.count()} new versions.")
+    print(f"dim_customer: Inserted {new_count} new versions.")
 else:
     print("dim_customer: No new versions to insert.")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+print("===== Processing: dim_product =====")
+
+# Join products with categories and get latest version per product_id
+products = spark.table("products_silver").alias("p") \
+    .join(spark.table("product_categories_silver").alias("c"), "category_id") \
+    .select("p.product_id", "p.product_name", "p.category_id", "c.category_name", 
+            "c.category_group", "p.unit_cost", "p.unit_price", "p.status", 
+            "p.row_hash", "p.silver_ingestion_timestamp")
+
+# Get latest version per product_id
+window_spec = Window.partitionBy("product_id").orderBy(F.desc("silver_ingestion_timestamp"))
+latest_products = products \
+    .withColumn("rank", F.row_number().over(window_spec)) \
+    .filter(F.col("rank") == 1) \
+    .drop("rank", "silver_ingestion_timestamp")
+
+# Get existing dim_product
+existing_dim = spark.table("dim_product")
+
+# Assign stable surrogate keys
+# For existing product_ids, reuse their key; for new ones, generate new keys
+existing_keys = existing_dim.select("product_id", "product_key")
+
+products_with_keys = latest_products.join(existing_keys, on="product_id", how="left")
+
+# Get max key for new products
+max_key = spark.sql("SELECT COALESCE(MAX(product_key), 0) as max_key FROM dim_product").first().max_key
+
+# Assign new keys to products without keys
+new_products = products_with_keys.filter(F.col("product_key").isNull())
+if new_products.count() > 0:
+    new_products = new_products \
+        .withColumn("row_num", F.row_number().over(Window.orderBy("product_id"))) \
+        .withColumn("product_key", F.col("row_num") + max_key) \
+        .drop("row_num")
+    
+    # Union with existing products that already have keys
+    existing_products = products_with_keys.filter(F.col("product_key").isNotNull())
+    products_with_keys = existing_products.unionByName(new_products)
+
+# Merge into dim_product
+final_products = products_with_keys.select(
+    "product_key", "product_id", "product_name", "category_id", "category_name", 
+    "category_group", "unit_cost", "unit_price", "status"
+)
+
+DeltaTable.forName(spark, "dim_product").alias("target").merge(
+    final_products.alias("source"),
+    "target.product_id = source.product_id"
+).whenMatchedUpdate(
+    condition="target.product_name != source.product_name OR " +
+              "target.unit_cost != source.unit_cost OR " +
+              "target.unit_price != source.unit_price OR " +
+              "target.status != source.status OR " +
+              "target.category_name != source.category_name OR " +
+              "target.category_group != source.category_group",
+    set={
+        "product_name": "source.product_name",
+        "category_id": "source.category_id",
+        "category_name": "source.category_name",
+        "category_group": "source.category_group",
+        "unit_cost": "source.unit_cost",
+        "unit_price": "source.unit_price",
+        "status": "source.status"
+    }
+).whenNotMatchedInsertAll().execute()
+
+print(f"dim_product updated. Total products: {spark.table('dim_product').count()}")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+print("===== Processing: dim_channel =====")
+
+# Get latest version per channel_id
+channels = spark.table("channels_silver")
+
+window_spec = Window.partitionBy("channel_id").orderBy(F.desc("silver_ingestion_timestamp"))
+latest_channels = channels \
+    .withColumn("rank", F.row_number().over(window_spec)) \
+    .filter(F.col("rank") == 1) \
+    .drop("rank", "row_hash", "silver_ingestion_timestamp")
+
+# Get existing dim_channel
+existing_dim = spark.table("dim_channel")
+
+# Assign stable surrogate keys
+existing_keys = existing_dim.select("channel_id", "channel_key")
+channels_with_keys = latest_channels.join(existing_keys, on="channel_id", how="left")
+
+# Get max key for new channels
+max_key = spark.sql("SELECT COALESCE(MAX(channel_key), 0) as max_key FROM dim_channel").first().max_key
+
+# Assign new keys to channels without keys
+new_channels = channels_with_keys.filter(F.col("channel_key").isNull())
+if new_channels.count() > 0:
+    new_channels = new_channels \
+        .withColumn("row_num", F.row_number().over(Window.orderBy("channel_id"))) \
+        .withColumn("channel_key", F.col("row_num") + max_key) \
+        .drop("row_num")
+    
+    existing_channels = channels_with_keys.filter(F.col("channel_key").isNotNull())
+    channels_with_keys = existing_channels.unionByName(new_channels)
+
+# Merge into dim_channel
+final_channels = channels_with_keys.select(
+    "channel_key", "channel_id", "channel_name", "channel_type", "region"
+)
+
+DeltaTable.forName(spark, "dim_channel").alias("target").merge(
+    final_channels.alias("source"),
+    "target.channel_id = source.channel_id"
+).whenMatchedUpdate(
+    condition="target.channel_name != source.channel_name OR " +
+              "target.channel_type != source.channel_type OR " +
+              "target.region != source.region",
+    set={
+        "channel_name": "source.channel_name",
+        "channel_type": "source.channel_type",
+        "region": "source.region"
+    }
+).whenNotMatchedInsertAll().execute()
+
+print(f"dim_channel updated. Total channels: {spark.table('dim_channel').count()}")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC select count(*) from dim_channel
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 
 # METADATA ********************
 
