@@ -280,18 +280,65 @@ print(f"dim_channel updated. Total channels: {spark.table('dim_channel').count()
 
 # CELL ********************
 
-# MAGIC %%sql
-# MAGIC select count(*) from dim_channel
+print("===== Processing: fact_sales =====")
 
-# METADATA ********************
+# Get last watermark
+last_watermark_query = "SELECT last_watermark FROM watermark_table WHERE table_name = 'fact_sales'"
+last_watermark = spark.sql(last_watermark_query).first().last_watermark
 
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
+print(f"Last watermark: {last_watermark}")
 
-# CELL ********************
+# Get new orders since last watermark
+orders = spark.table("orders_headers_silver") \
+    .filter(F.col("silver_ingestion_timestamp") > last_watermark) \
+    .select("order_id", "customer_id", "channel_id", "order_date", "order_status", "silver_ingestion_timestamp")
 
+# Get ALL line items for these new orders (not filtered by watermark)
+new_order_ids = orders.select("order_id").distinct()
+
+line_items = spark.table("line_items_silver") \
+    .join(new_order_ids, on="order_id", how="inner") \
+    .select("line_id", "order_id", "product_id", "quantity", "unit_price")
+
+# Join orders with line items
+sales = orders.join(line_items, on="order_id", how="inner")
+
+sales_count = sales.count()
+
+if sales_count > 0:
+    # Lookup dimension keys
+    dim_customer = spark.table("dim_customer").filter(F.col("is_current") == True) \
+        .select(F.col("customer_id"), F.col("customer_key"))
+    
+    dim_product = spark.table("dim_product").select("product_id", "product_key")
+    dim_channel = spark.table("dim_channel").select("channel_id", "channel_key")
+    dim_date = spark.table("dim_date").select(F.col("date").alias("order_date"), F.col("date_key"))
+    
+    # Join to get all surrogate keys
+    fact = sales \
+        .join(dim_customer, on="customer_id", how="inner") \
+        .join(dim_product, on="product_id", how="inner") \
+        .join(dim_channel, on="channel_id", how="inner") \
+        .join(dim_date, on="order_date", how="inner") \
+        .withColumn("total_amount", (F.col("quantity") * F.col("unit_price")).cast("decimal(10,2)")) \
+        .select("line_id", "order_id", "product_key", "customer_key", "channel_key", 
+                "date_key", "order_status", "quantity", "unit_price", "total_amount")
+    
+    fact_count = fact.count()
+    
+    # Append to fact_sales
+    fact.write.format("delta").mode("append").saveAsTable("fact_sales")
+    print(f"fact_sales: Inserted {fact_count} new records.")
+    
+    # Update watermark to max timestamp from this batch
+    new_watermark = sales.agg(F.max("silver_ingestion_timestamp")).first()[0]
+    
+    update_query = "UPDATE watermark_table SET last_watermark = CAST('" + str(new_watermark) + "' AS TIMESTAMP) WHERE table_name = 'fact_sales'"
+    spark.sql(update_query)
+    
+    print(f"Watermark updated to: {new_watermark}")
+else:
+    print("fact_sales: No new records to process.")
 
 # METADATA ********************
 
