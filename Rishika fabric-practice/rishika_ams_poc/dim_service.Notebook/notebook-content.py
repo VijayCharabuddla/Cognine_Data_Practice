@@ -23,8 +23,7 @@
 # CELL ********************
 
 # MAGIC %%sql
-# MAGIC # Welcome to your new notebook
-# MAGIC # Type here in the cell editor to add code!
+# MAGIC 
 # MAGIC 
 # MAGIC CREATE OR REPLACE TEMP VIEW dim_service_src AS
 # MAGIC SELECT

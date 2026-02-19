@@ -60,8 +60,13 @@
 # MAGIC       tgt.sla_breach_flag = src.sla_breach_flag,
 # MAGIC       tgt.invalid_date_flag = src.invalid_date_flag,
 # MAGIC       tgt.is_deleted = CASE WHEN src.is_deleted = 'Y' THEN true ELSE false END,
+# MAGIC 
 # MAGIC       tgt.opened_date_key = CAST(date_format(src.opened_ts, 'yyyyMMdd') AS INT),
 # MAGIC       tgt.closed_date_key = CAST(date_format(src.closed_ts, 'yyyyMMdd') AS INT),
+# MAGIC 
+# MAGIC       tgt.opened_timestamp = src.opened_ts,
+# MAGIC       tgt.closed_timestamp = src.closed_ts,
+# MAGIC 
 # MAGIC       tgt.updated_ts = current_timestamp();
 
 
@@ -95,7 +100,31 @@
 # MAGIC     FROM new_rows
 # MAGIC )
 # MAGIC 
-# MAGIC INSERT INTO fact_ticket
+# MAGIC INSERT INTO fact_ticket (
+# MAGIC     ticket_key,
+# MAGIC     ticket_id,
+# MAGIC     requester_key,
+# MAGIC     service_key,
+# MAGIC     support_group_key,
+# MAGIC     category_key,
+# MAGIC     opened_date_key,
+# MAGIC     closed_date_key,
+# MAGIC     ticket_type,
+# MAGIC     ticket_status,
+# MAGIC     priority,
+# MAGIC     impact,
+# MAGIC     urgency,
+# MAGIC     location,
+# MAGIC     resolution_minutes,
+# MAGIC     sla_target_minutes,
+# MAGIC     sla_breach_flag,
+# MAGIC     invalid_date_flag,
+# MAGIC     is_deleted,
+# MAGIC     opened_timestamp,
+# MAGIC     closed_timestamp,
+# MAGIC     updated_ts
+# MAGIC )
+# MAGIC 
 # MAGIC SELECT
 # MAGIC     kb.max_key + n.rn,
 # MAGIC     n.ticket_id,
@@ -121,6 +150,10 @@
 # MAGIC     n.invalid_date_flag,
 # MAGIC 
 # MAGIC     CASE WHEN n.is_deleted = 'Y' THEN true ELSE false END,
+# MAGIC 
+# MAGIC     n.opened_ts,
+# MAGIC     n.closed_ts,
+# MAGIC 
 # MAGIC     current_timestamp()
 # MAGIC 
 # MAGIC FROM numbered n
@@ -129,7 +162,6 @@
 # MAGIC LEFT JOIN dim_user u
 # MAGIC     ON n.requester_id = u.user_id
 # MAGIC     AND u.is_current = true
-# MAGIC 
 # MAGIC 
 # MAGIC LEFT JOIN dim_service s
 # MAGIC     ON n.service_id = s.service_id
@@ -153,10 +185,56 @@
 # MAGIC %%sql
 # MAGIC UPDATE load_control
 # MAGIC SET max_watermark = (
-# MAGIC     SELECT MAX(load_timestamp) FROM silver_tickets
+# MAGIC     SELECT MAX(load_timestamp)
+# MAGIC     FROM silver_tickets
 # MAGIC ),
 # MAGIC last_run_ts = current_timestamp()
 # MAGIC WHERE table_name = 'fact_ticket';
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC ALTER TABLE fact_ticket
+# MAGIC ADD COLUMNS (
+# MAGIC     opened_timestamp TIMESTAMP,
+# MAGIC     closed_timestamp TIMESTAMP
+# MAGIC );
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC UPDATE load_control
+# MAGIC SET max_watermark = TIMESTAMP '1900-01-01 00:00:00'
+# MAGIC WHERE table_name = 'fact_ticket';
+
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC SELECT COUNT(*) FROM fact_ticket_src;
 
 
 # METADATA ********************

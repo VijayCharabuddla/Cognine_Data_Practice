@@ -810,11 +810,13 @@
 # MAGIC ) AS source
 # MAGIC ON target.ticket_id = source.ticket_id
 # MAGIC 
-# MAGIC WHEN MATCHED THEN
+# MAGIC WHEN MATCHED 
+# MAGIC      AND target.is_deleted <> 'Y' THEN
 # MAGIC     UPDATE SET
 # MAGIC         target.is_deleted = 'Y',
-# MAGIC         target.active_flag = 'N',
+# MAGIC         target.record_updated_ts = current_timestamp(),
 # MAGIC         target.load_timestamp = current_timestamp();
+# MAGIC 
 
 
 # METADATA ********************
