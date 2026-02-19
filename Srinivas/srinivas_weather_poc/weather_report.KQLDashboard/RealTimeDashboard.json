@@ -9,10 +9,10 @@
     {
       "id": "b33edce4-1c69-4d2d-b4cb-018fe26e79f7",
       "title": "temp by city",
-      "visualType": "column",
+      "visualType": "heatmap",
       "pageId": "c41ba099-2f09-47a9-9f94-7a0520a93138",
       "layout": {
-        "x": 13,
+        "x": 11,
         "y": 0,
         "width": 11,
         "height": 9
@@ -22,51 +22,24 @@
         "queryId": "26cd3611-8652-48d6-a82b-201fc52092da"
       },
       "visualOptions": {
-        "multipleYAxes": {
-          "base": {
-            "id": "-1",
-            "label": "",
-            "columns": [],
-            "yAxisMaximumValue": null,
-            "yAxisMinimumValue": null,
-            "yAxisScale": "linear",
-            "horizontalLines": []
-          },
-          "additional": [],
-          "showMultiplePanels": false
-        },
-        "seriesColors": {
-          "temp_c": "color--(4)"
-        },
-        "hideLegend": false,
-        "legendLocation": "bottom",
-        "xColumnTitle": "",
         "xColumn": null,
-        "yColumns": null,
-        "seriesColumns": null,
-        "xAxisScale": "linear",
-        "verticalLine": "",
-        "crossFilterDisabled": false,
-        "drillthroughDisabled": false,
-        "forceAxisTicks": false,
-        "crossFilter": [],
-        "drillthrough": [],
-        "selectedDataOnLoad": {
-          "all": true,
-          "limit": 10
-        }
+        "yColumn": null,
+        "xColumnTitle": "",
+        "yColumnTitle": "",
+        "heatMap__dataColumn": null,
+        "heatMap__colorPaletteKey": "orange"
       }
     },
     {
       "id": "a58338cd-cc94-4ada-92c8-5e10d74a8ad3",
-      "title": "temp changes on a day",
-      "visualType": "line",
+      "title": "aqi on a day",
+      "visualType": "heatmap",
       "pageId": "c41ba099-2f09-47a9-9f94-7a0520a93138",
       "layout": {
         "x": 0,
         "y": 0,
         "width": 10,
-        "height": 9
+        "height": 5
       },
       "queryRef": {
         "kind": "query",
@@ -74,37 +47,12 @@
       },
       "hideTitle": true,
       "visualOptions": {
-        "multipleYAxes": {
-          "base": {
-            "id": "-1",
-            "label": "",
-            "columns": [],
-            "yAxisMaximumValue": null,
-            "yAxisMinimumValue": null,
-            "yAxisScale": "linear",
-            "horizontalLines": []
-          },
-          "additional": [],
-          "showMultiplePanels": false
-        },
-        "seriesColors": {},
-        "hideLegend": false,
-        "legendLocation": "bottom",
-        "xColumnTitle": "",
-        "xColumn": null,
-        "yColumns": null,
-        "seriesColumns": null,
-        "xAxisScale": "linear",
-        "verticalLine": "",
-        "crossFilterDisabled": false,
-        "drillthroughDisabled": false,
-        "forceAxisTicks": false,
-        "crossFilter": [],
-        "drillthrough": [],
-        "selectedDataOnLoad": {
-          "all": true,
-          "limit": 10
-        }
+        "xColumn": "city",
+        "yColumn": null,
+        "xColumnTitle": "city",
+        "yColumnTitle": "Aqi_band",
+        "heatMap__dataColumn": null,
+        "heatMap__colorPaletteKey": "orange"
       }
     },
     {
@@ -114,7 +62,7 @@
       "pageId": "c41ba099-2f09-47a9-9f94-7a0520a93138",
       "layout": {
         "x": 0,
-        "y": 9,
+        "y": 5,
         "width": 9,
         "height": 7
       },
@@ -126,7 +74,7 @@
         "multipleYAxes": {
           "base": {
             "id": "-1",
-            "label": "",
+            "label": "Temparature",
             "columns": [],
             "yAxisMaximumValue": null,
             "yAxisMinimumValue": null,
@@ -138,8 +86,8 @@
         },
         "seriesColors": {},
         "hideLegend": false,
-        "legendLocation": "bottom",
-        "xColumnTitle": "",
+        "legendLocation": "left",
+        "xColumnTitle": "days",
         "xColumn": null,
         "yColumns": null,
         "seriesColumns": null,
@@ -149,11 +97,7 @@
         "drillthroughDisabled": false,
         "forceAxisTicks": false,
         "crossFilter": [],
-        "drillthrough": [],
-        "selectedDataOnLoad": {
-          "all": true,
-          "limit": 10
-        }
+        "drillthrough": []
       }
     }
   ],
@@ -199,7 +143,7 @@
         "kind": "inline",
         "dataSourceId": "ebd5dd40-0376-4884-8c16-66ffc694cc05"
       },
-      "text": "silver_environment_clean\r\n| summarize arg_max(event_time, *) by city\r\n| project city, temp_c\r\n| order by temp_c desc\r\n",
+      "text": "silver_environment_clean\r\n| summarize arg_max(event_time, *) by city\r\n| project city, temp_c\r\n\r\n",
       "id": "26cd3611-8652-48d6-a82b-201fc52092da",
       "usedVariables": []
     },
@@ -208,7 +152,7 @@
         "kind": "inline",
         "dataSourceId": "ebd5dd40-0376-4884-8c16-66ffc694cc05"
       },
-      "text": "silver_environment_clean\n| where event_time > ago(6h)\n| summarize avg_temp = round(avg(temp_c),0) by city, bin(event_time, 1hr)\n| order by event_time asc",
+      "text": "silver_environment_clean\n| summarize arg_max(event_time, aqi_index, aqi_band) by city\n| project\n    city,\n    AQI_Index = aqi_index,\n    AQI_Band  = aqi_band\n",
       "id": "8eea8309-a4af-45ac-ad8b-0cfd59d2a756",
       "usedVariables": []
     },
