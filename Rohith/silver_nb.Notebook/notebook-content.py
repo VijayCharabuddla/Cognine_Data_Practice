@@ -45,7 +45,6 @@ df = spark.table("customers_bronze") \
     .withColumn("email",         F.trim(F.col("email"))) \
     .withColumn("created_date",  F.to_date(F.col("created_date"))) \
     .filter(F.col("customer_id").isNotNull()) \
-    .dropDuplicates(["customer_id"]) \
     .select(*biz_cols)
 
 hash_cols = ["first_name", "last_name", "segment", "email", "phone", "created_date"]
@@ -79,7 +78,6 @@ df = spark.table("customer_addresses_bronze") \
     .withColumn("country", F.trim(F.col("country"))) \
     .withColumn("pincode", F.col("pincode").cast("integer")) \
     .filter(F.col("address_id").isNotNull()) \
-    .dropDuplicates(["address_id"]) \
     .select(*biz_cols)
 
 hash_cols = ["customer_id", "street", "city", "state", "country", "pincode"]
@@ -112,7 +110,6 @@ df = spark.table("products_bronze") \
     .withColumn("unit_cost",    F.col("unit_cost").cast("decimal(10,2)")) \
     .withColumn("unit_price",   F.col("unit_price").cast("decimal(10,2)")) \
     .filter(F.col("product_id").isNotNull()) \
-    .dropDuplicates(["product_id"]) \
     .select(*biz_cols)
 
 hash_cols = ["product_name", "category_id", "unit_cost", "unit_price", "status"]
@@ -143,7 +140,6 @@ df = spark.table("product_categories_bronze") \
     .withColumn("category_name",  F.trim(F.col("category_name"))) \
     .withColumn("category_group", F.trim(F.col("category_group"))) \
     .filter(F.col("category_id").isNotNull()) \
-    .dropDuplicates(["category_id"]) \
     .select(*biz_cols)
 
 hash_cols = ["category_name", "category_group"]
@@ -237,7 +233,6 @@ df = spark.table("channels_bronze") \
     .withColumn("channel_type", F.trim(F.col("channel_type"))) \
     .withColumn("region",       F.trim(F.col("region"))) \
     .filter(F.col("channel_id").isNotNull()) \
-    .dropDuplicates(["channel_id"]) \
     .select(*biz_cols)
 
 hash_cols = ["channel_name", "channel_type", "region"]
